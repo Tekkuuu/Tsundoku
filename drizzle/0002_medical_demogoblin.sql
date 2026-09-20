@@ -1,0 +1,1 @@
+ALTER TABLE "book" DROP COLUMN "cover_url";

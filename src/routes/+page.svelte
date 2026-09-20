@@ -1,2 +1,231 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import { BookCheck, PackageCheck, ArrowUpRight, BookOpen, ShoppingBag } from '@lucide/svelte';
+	import type { PageProps } from './$types';
+	import { resolve } from '$app/paths';
+	import { m } from '$lib/paraglide/messages';
+	import { markRead } from '$lib/components/forms/book/markRead.remote';
+	import { markOwned } from '$lib/components/forms/book/markOwned.remote';
+	import { getReading } from '$lib/components/forms/book/getReading.remote';
+	import { createRemoteActionHandler } from '$lib/utils/formUtils';
+	import { invalidateAll } from '$app/navigation';
+	import BookCover from '$lib/components/BookCover.svelte';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
+	import { coverSrc } from '$lib/fileUrl';
+
+	let { data }: PageProps = $props();
+
+	const radius = 52;
+	const circumference = 2 * Math.PI * radius;
+
+	const progress = $derived(
+		data.totalVolumesOwned && data.totalVolumesOwned > 0
+			? Math.min(1, (data.totalVolumesRead ?? 0) / data.totalVolumesOwned)
+			: 0
+	);
+	const percentage = $derived(Math.round(progress * 100));
+	const offset = $derived(circumference * (1 - progress));
+
+	const reading = getReading();
+	let pendingOwnedBookId = $state<string | null>(null);
+
+	function requiresOwnedConfirmation(item: (typeof data.ordered)[number]) {
+		return !item.inOrder && (!item.book.boughtAt || item.book.paidPrice === null);
+	}
+
+	function confirmMarkOwned() {
+		if (pendingOwnedBookId === null) return;
+
+		const bookId = pendingOwnedBookId;
+		pendingOwnedBookId = null;
+		void createRemoteActionHandler({
+			success: m.dashboard_widget_ordered_success_bookowned(),
+			error: m.dashboard_widget_ordered_error_bookowned(),
+			run: () => markOwned({ id: bookId, status: 'Owned' }),
+			onSuccess: () => invalidateAll()
+		})();
+	}
+</script>
+
+<main class="p-4">
+	<div class="mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+		<section
+			class="flex flex-col items-center justify-center gap-4 card preset-filled-surface-100-900 p-6"
+		>
+			<h2 class="text-xl font-semibold">{m.dashboard_widget_readprogress()}</h2>
+			{#if data.totalVolumesOwned != undefined && data.totalVolumesRead != undefined}
+				<div class="relative">
+					<svg class="size-40 -rotate-90" viewBox="0 0 120 120">
+						<circle
+							class="text-surface-200-800"
+							cx="60"
+							cy="60"
+							r={radius}
+							fill="none"
+							stroke="currentColor"
+							stroke-width="10"
+						/>
+						<circle
+							class="text-primary-500"
+							cx="60"
+							cy="60"
+							r={radius}
+							fill="none"
+							stroke="currentColor"
+							stroke-width="10"
+							stroke-linecap="round"
+							stroke-dasharray={circumference}
+							stroke-dashoffset={offset}
+						/>
+					</svg>
+					<div class="absolute inset-0 flex flex-col items-center justify-center">
+						<span class="text-3xl font-bold">{percentage}%</span>
+						<span class="text-surface-500-500 text-xs">
+							{data.totalVolumesRead} / {data.totalVolumesOwned}
+						</span>
+					</div>
+				</div>
+			{:else}
+				<p class="text-error-500">{m.dashboard_error_occurred()}</p>
+			{/if}
+		</section>
+
+		<section class="card preset-filled-surface-100-900 p-4">
+			<div class="mb-4 flex items-center gap-2">
+				<BookOpen class="size-5" />
+				<h2 class="text-xl font-semibold">{m.dashboard_widget_reading_title()}</h2>
+			</div>
+			{#await reading then books}
+				{#if books.length > 0}
+					<ul class="space-y-3">
+						{#each books as item (item.book.id)}
+							{@const onMarkRead = createRemoteActionHandler({
+								success: m.dashboard_widget_reading_success_bookcomplted(),
+								error: m.dashboard_widget_reading_error_bookcomplted(),
+								run: () => markRead({ id: item.book.id, readStatus: 'Completed' }),
+								onSuccess: () => reading.refresh()
+							})}
+							<li class="flex items-center gap-3">
+								<a href={resolve(`/series/${item.series.id}/${item.book.id}`)} class="shrink-0">
+									<BookCover
+										src={coverSrc(item.book)}
+										alt={m.dashboard_cover_alt({ title: item.series.title })}
+										imgClass="h-24 w-16 rounded object-cover"
+										fallbackClass="h-24 w-16 rounded"
+										label={m.dashboard_widget_reading_nocover()}
+									/>
+								</a>
+								<div class="min-w-0 flex-1">
+									<a
+										href={resolve(`/series/${item.series.id}/${item.book.id}`)}
+										class="hover:underline"
+									>
+										<p class="truncate font-medium">{item.series.title}</p>
+									</a>
+									<p class="text-surface-500-500 text-sm">
+										{m.dashboard_widget_reading_volume({ volumeNumber: item.book.volumeNumber })}
+									</p>
+								</div>
+								<div class="flex gap-1">
+									<button
+										type="button"
+										class="btn preset-filled-success-500 p-2"
+										title={m.dashboard_widget_reading_markcompleted()}
+										onclick={onMarkRead}
+									>
+										<BookCheck class="size-4" />
+									</button>
+									<a
+										href={resolve(`/series/${item.series.id}/${item.book.id}`)}
+										class="btn preset-filled-primary-500 p-2"
+										title={m.dashboard_widget_reading_openbook()}
+									>
+										<ArrowUpRight class="size-4" />
+									</a>
+								</div>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<p class="text-surface-500-500 text-sm">{m.dashboard_widget_reading_empty()}</p>
+				{/if}
+			{/await}
+		</section>
+
+		<section class="card preset-filled-surface-100-900 p-4 md:col-span-2 lg:col-span-1">
+			<div class="mb-4 flex items-center gap-2">
+				<ShoppingBag class="size-5" />
+				<h2 class="text-xl font-semibold">{m.dashboard_widget_ordered_title()}</h2>
+			</div>
+			{#if data.ordered.length > 0}
+				<ul class="space-y-3">
+					{#each data.ordered as item (item.book.id)}
+						{@const onMarkOwned = createRemoteActionHandler({
+							success: m.dashboard_widget_ordered_success_bookowned(),
+							error: m.dashboard_widget_ordered_error_bookowned(),
+							run: () => markOwned({ id: item.book.id, status: 'Owned' }),
+							onSuccess: () => invalidateAll()
+						})}
+						{@const handleMarkOwned = () => {
+							if (requiresOwnedConfirmation(item)) {
+								pendingOwnedBookId = item.book.id;
+								return;
+							}
+							onMarkOwned();
+						}}
+						<li class="flex items-center gap-3">
+							<a href={resolve(`/series/${item.series.id}/${item.book.id}`)} class="shrink-0">
+								<BookCover
+									src={coverSrc(item.book)}
+									alt={m.dashboard_cover_alt({ title: item.series.title })}
+									imgClass="h-24 w-16 rounded object-cover"
+									fallbackClass="h-24 w-16 rounded"
+									label={m.dashboard_widget_reading_nocover()}
+								/>
+							</a>
+							<div class="min-w-0 flex-1">
+								<a
+									href={resolve(`/series/${item.series.id}/${item.book.id}`)}
+									class="hover:underline"
+								>
+									<p class="truncate font-medium">{item.series.title}</p>
+								</a>
+								<p class="text-surface-500-500 text-sm">
+									{m.dashboard_widget_reading_volume({ volumeNumber: item.book.volumeNumber })}
+								</p>
+							</div>
+							<div class="flex gap-1">
+								<button
+									type="button"
+									class="btn preset-filled-success-500 p-2"
+									title={m.dashboard_widget_ordered_markowned()}
+									onclick={handleMarkOwned}
+								>
+									<PackageCheck class="size-4" />
+								</button>
+								<a
+									href={resolve(`/series/${item.series.id}/${item.book.id}`)}
+									class="btn preset-filled-primary-500 p-2"
+									title={m.dashboard_widget_reading_openbook()}
+								>
+									<ArrowUpRight class="size-4" />
+								</a>
+							</div>
+						</li>
+					{/each}
+				</ul>
+			{:else}
+				<p class="text-surface-500-500 text-sm">{m.dashboard_widget_ordered_empty()}</p>
+			{/if}
+		</section>
+	</div>
+	<InfoDialog
+		open={pendingOwnedBookId !== null}
+		title={m.dashboard_widget_ordered_incomplete_title()}
+		message={m.dashboard_widget_ordered_incomplete_message()}
+		confirmLabel={m.dashboard_widget_ordered_incomplete_confirm()}
+		onOpenChange={(event) => {
+			if (!event.open) pendingOwnedBookId = null;
+		}}
+		onConfirm={confirmMarkOwned}
+	/>
+</main>

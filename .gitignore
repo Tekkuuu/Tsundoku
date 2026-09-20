@@ -8,6 +8,12 @@ node_modules
 /.svelte-kit
 /build
 
+# Backups
+/backups
+
+# Self-hosted file uploads (covers, receipts)
+/data
+
 # OS
 .DS_Store
 Thumbs.db

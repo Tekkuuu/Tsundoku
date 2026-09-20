@@ -1,0 +1,17 @@
+node_modules
+.svelte-kit
+build
+.output
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+backups
+data
+drizzle/meta/_journal.json.bak
+Dockerfile
+.dockerignore
+README.md
+.vscode
+static/*.log

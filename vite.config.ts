@@ -14,6 +14,9 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 			adapter: adapter(),
+			experimental: {
+				remoteFunctions: true
+			},
 			typescript: {
 				config: (config) => ({
 					...config,
@@ -23,8 +26,12 @@ export default defineConfig({
 		}),
 		paraglideVitePlugin({ project: './project.inlang', outdir: './src/lib/paraglide' })
 	],
+	ssr: {
+		noExternal: ['@lucide/svelte']
+	},
 	test: {
 		expect: { requireAssertions: true },
+		passWithNoTests: true,
 		projects: [
 			{
 				extends: './vite.config.ts',

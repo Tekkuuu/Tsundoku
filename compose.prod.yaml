@@ -1,0 +1,40 @@
+services:
+  app:
+    image: ghcr.io/tekkuuu/tsundoku:latest
+    container_name: tsundoku
+    ports:
+      - '3000:3000'
+    environment:
+      ORIGIN: 'https://tsundoku.example.com'
+      DATABASE_URL: 'postgres://tsundoku:tsundoku@db:5432/tsundoku'
+      BETTER_AUTH_SECRET: '${BETTER_AUTH_SECRET}'
+      MAX_USERS: '1'
+      LOG_LEVEL: 'info'
+      # Self-hosted uploads (covers, receipts) live here.
+      DATA_DIR: '/data'
+    volumes:
+      - appdata:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    container_name: tsundoku-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tsundoku
+      POSTGRES_PASSWORD: tsundoku
+      POSTGRES_DB: tsundoku
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tsundoku -d tsundoku']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  appdata:
