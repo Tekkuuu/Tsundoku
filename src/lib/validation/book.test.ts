@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CreateBookSchema, UpdateBookSchema, isReadStatusAllowed } from './book';
+import {
+	CreateBookSchema,
+	CreateBooksBatchSchema,
+	UpdateBookSchema,
+	isReadStatusAllowed
+} from './book';
 
 const seriesId = '550e8400-e29b-41d4-a716-446655440000';
 
@@ -48,6 +53,54 @@ describe('CreateBookSchema', () => {
 			CreateBookSchema.safeParse({ ...baseBook, status: 'Wishlist', readStatus: 'Not Read' })
 				.success
 		).toBe(true);
+	});
+});
+
+describe('CreateBooksBatchSchema', () => {
+	const batchBook = {
+		volumeNumber: 1,
+		status: 'Owned',
+		readStatus: 'Not Read'
+	} as const;
+
+	it('accepts a batch of valid rows', () => {
+		const result = CreateBooksBatchSchema.safeParse({
+			seriesId,
+			books: [batchBook, { ...batchBook, volumeNumber: 2 }]
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it('rejects an empty batch', () => {
+		const result = CreateBooksBatchSchema.safeParse({ seriesId, books: [] });
+		expect(result.success).toBe(false);
+	});
+
+	it('reports the read-status mismatch against the offending row', () => {
+		const result = CreateBooksBatchSchema.safeParse({
+			seriesId,
+			books: [batchBook, { volumeNumber: 2, status: 'Wishlist', readStatus: 'Completed' }]
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const issue = result.error.issues.find((entry) =>
+				entry.path.join('.').includes('readStatus')
+			);
+			expect(issue).toBeDefined();
+			expect(issue?.path[0]).toBe('books');
+			expect(issue?.path[1]).toBe(1);
+		}
+	});
+
+	it('requires a currency when a row has a price', () => {
+		const result = CreateBooksBatchSchema.safeParse({
+			seriesId,
+			books: [{ ...batchBook, paidPrice: '12.50' }]
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues.some((issue) => issue.path.includes('currencyCode'))).toBe(true);
+		}
 	});
 });
 

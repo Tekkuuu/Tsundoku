@@ -13,31 +13,16 @@ import {
 } from 'drizzle-orm/pg-core';
 import { user } from './auth.schema';
 
-// ============================================================================
-// ENUMS
-// ============================================================================
 export const seriesStatusEnum = pgEnum('series_status', [
 	'Ongoing',
 	'Completed',
 	'Hiatus',
 	'Cancelled'
 ]);
-
 export const bookStatusEnum = pgEnum('book_status', ['Wishlist', 'Ordered', 'Owned']);
-
 export const readStatusEnum = pgEnum('read_status', ['Not Read', 'Reading', 'Completed']);
-
 export const fileKindEnum = pgEnum('file_kind', ['cover', 'receipt']);
 
-// ============================================================================
-// CORE TABLES
-// ============================================================================
-
-// Self-hosted file attachments (cover uploads, receipt uploads / imports).
-// Bytes live on disk under opaque UUID names (see $lib/server/files); this
-// table is the only map from id to owner, so every row is user-scoped like
-// all other data. A row with no book/order referencing it is staged (fresh
-// upload awaiting form submit) and reaped by `pnpm files:prune`.
 export const file = pgTable(
 	'file',
 	{
@@ -83,21 +68,11 @@ export const book = pgTable(
 		volumeNumber: integer('volume_number').notNull(),
 		coverFileId: uuid('cover_file_id').references(() => file.id, { onDelete: 'set null' }),
 		isbn: text('isbn'),
-
-		// Shelf & Progress
 		status: bookStatusEnum('status').notNull().default('Owned'),
 		readStatus: readStatusEnum('read_status').notNull().default('Not Read'),
-
-		// Financials
-		// Nullable: required whenever either price is set, null when neither is
-		// ("never entered" — e.g. a gift). Order currency stays NOT NULL.
 		currencyCode: text('currency_code'),
-		// Nullable: null means "never entered", distinct from '0.00' (free).
 		paidPrice: numeric('paid_price', { precision: 10, scale: 2 }),
 		originalPrice: numeric('original_price', { precision: 10, scale: 2 }),
-
-		// Manual purchase date (month precision). Used for stats only when the
-		// book is not linked to an order — a linked order's date takes precedence.
 		boughtAt: timestamp('bought_at')
 	},
 	(table) => [
@@ -105,7 +80,6 @@ export const book = pgTable(
 		index('book_seriesId_idx').on(table.seriesId),
 		index('book_user_series_volume_idx').on(table.userId, table.seriesId, table.volumeNumber),
 		unique('unique_user_series_volume').on(table.userId, table.seriesId, table.volumeNumber),
-		// Read progress only makes sense for owned copies.
 		check(
 			'book_read_status_owned_check',
 			sql`${table.status} = 'Owned' OR ${table.readStatus} = 'Not Read'`
