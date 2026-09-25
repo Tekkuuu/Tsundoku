@@ -1,4 +1,5 @@
 export { createBook } from './createBook.remote';
+export { createBooksBatch } from './createBooksBatch.remote';
 export { updateBook } from './updateBook.remote';
 export { deleteBook } from './deleteBook.remote';
 export { updateBookStatus } from './updateBookStatus.remote';

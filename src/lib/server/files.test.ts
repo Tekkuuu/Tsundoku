@@ -195,8 +195,6 @@ describe('fetchUrlBytes', () => {
 	});
 
 	it('resolves a hostname through the guarded lookup (autoSelectFamily asks for all addresses)', async () => {
-		// Literal IPs bypass `lookup`, so this is the only path that exercises
-		// guardedLookup. On Node 20+ net calls it with { all: true }.
 		server = createServer((_req, res) => {
 			res.setHeader('content-type', 'image/png');
 			res.end(Buffer.from(PNG));

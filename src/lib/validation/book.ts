@@ -59,24 +59,30 @@ export function formatBoughtAtMonth(value: Date | string | null | undefined): st
 	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
+const currencyCodeField = z
+	.string()
+	.trim()
+	.refine((value) => value === '' || /^[A-Z]{3}$/.test(value), {
+		message: 'Currency must be a three-letter uppercase ISO code'
+	})
+	.optional();
+
+const bookFields = {
+	volumeNumber: z.number().int().positive({ message: 'Volume must be a positive number' }),
+	coverFileId: fileIdField,
+	isbn: z.string().optional(),
+	status: bookStatusEnum,
+	readStatus: readStatusEnum,
+	currencyCode: currencyCodeField,
+	paidPrice: priceField,
+	originalPrice: priceField,
+	boughtAt: boughtAtField
+} as const;
+
 const base = z
 	.object({
-		volumeNumber: z.number().int().positive({ message: 'Volume must be a positive number' }),
 		seriesId: z.uuidv4().nonempty({ message: 'Series is required' }),
-		coverFileId: fileIdField,
-		isbn: z.string().optional(),
-		status: bookStatusEnum,
-		readStatus: readStatusEnum,
-		currencyCode: z
-			.string()
-			.trim()
-			.refine((value) => value === '' || /^[A-Z]{3}$/.test(value), {
-				message: 'Currency must be a three-letter uppercase ISO code'
-			})
-			.optional(),
-		paidPrice: priceField,
-		originalPrice: priceField,
-		boughtAt: boughtAtField
+		...bookFields
 	})
 	.refine(checkCurrencyPresent, {
 		message: 'Currency is required when a price is set',
@@ -85,6 +91,19 @@ const base = z
 	.refine((val) => isReadStatusAllowed(val.status, val.readStatus), readStatusMismatch);
 
 export const CreateBookSchema = base;
+
+const batchBookSchema = z
+	.object(bookFields)
+	.refine(checkCurrencyPresent, {
+		message: 'Currency is required when a price is set',
+		path: ['currencyCode']
+	})
+	.refine((val) => isReadStatusAllowed(val.status, val.readStatus), readStatusMismatch);
+
+export const CreateBooksBatchSchema = z.object({
+	seriesId: z.uuidv4().nonempty({ message: 'Series is required' }),
+	books: z.array(batchBookSchema).min(1, { message: 'Add at least one volume' })
+});
 
 export const UpdateBookSchema = z
 	.object({
@@ -147,6 +166,7 @@ export const UpdateBookBoughtAtSchema = z.object({
 });
 
 export type CreateBook = z.infer<typeof CreateBookSchema>;
+export type CreateBooksBatch = z.infer<typeof CreateBooksBatchSchema>;
 export type UpdateBook = z.infer<typeof UpdateBookSchema>;
 export type SelectBook = z.infer<typeof SelectBookSchema>;
 export type UpdateBookStatus = z.infer<typeof UpdateBookStatusSchema>;

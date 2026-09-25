@@ -32,6 +32,7 @@
 		Heart,
 		LayoutGrid,
 		List,
+		ListPlus,
 		Pencil,
 		Plus,
 		ShoppingCart,
@@ -369,6 +370,13 @@
 			>
 				<Plus class="size-4" />
 				{m.series_detail_addbook()}
+			</a>
+			<a
+				href={resolve(`/series/${data.seriesInfo.id}/books/create/batch`)}
+				class="btn hidden w-full items-center preset-tonal btn-sm lg:flex"
+			>
+				<ListPlus class="size-4" />
+				{m.series_detail_addbooks()}
 			</a>
 		</div>
 
