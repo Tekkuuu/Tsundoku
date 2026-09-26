@@ -36,6 +36,13 @@
 
 	"dashboard_cover_alt": "Okładka: {title}",
 
+	"dashboard_kpimarquee_series": "Serie",
+	"dashboard_kpimarquee_ownedvolumes": "Posiadane tomy",
+	"dashboard_kpimarquee_readvolumes": "Przeczytane tomy",
+	"dashboard_kpimarquee_orderedvolumes": "Zamówione tomy",
+	"dashboard_kpimarquee_wishlistedvolumes": "Tomy na liście życzeń",
+	"dashboard_kpimarquee_orders": "Zamówienia",
+
 	"series_title": "Kolekcja serii",
 	"series_search_placeholder": "Wyszukaj tytuł lub autora...",
 	"series_search_help_title": "Pomoc wyszukiwania",

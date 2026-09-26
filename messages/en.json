@@ -36,6 +36,13 @@
 
 	"dashboard_cover_alt": "Cover for {title}",
 
+	"dashboard_kpimarquee_series": "Series",
+	"dashboard_kpimarquee_ownedvolumes": "Owned volumes",
+	"dashboard_kpimarquee_readvolumes": "Read volumes",
+	"dashboard_kpimarquee_orderedvolumes": "Ordered volumes",
+	"dashboard_kpimarquee_wishlistedvolumes": "Wishlisted volumes",
+	"dashboard_kpimarquee_orders": "Orders",
+
 	"series_title": "Series Collection",
 	"series_search_placeholder": "Search title or author...",
 	"series_search_help_title": "Search help",
