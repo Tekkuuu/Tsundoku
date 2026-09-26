@@ -120,7 +120,7 @@ node build
 
 ### 3) Run docker package
 
-Copy a read to use `compose.prod.yaml`
+Copy `compose.prod.yaml` - ready to use, just change environment variables.
 
 It pulls the App alongside a PostgreSQL database.
 Just remove the database service from docker compose if you want to use existing database
