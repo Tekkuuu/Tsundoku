@@ -43,6 +43,24 @@
 	"dashboard_kpimarquee_wishlistedvolumes": "Wishlisted volumes",
 	"dashboard_kpimarquee_orders": "Orders",
 
+	"dashboard_widget_readprogress_label": "{read} / {owned} volumes",
+
+	"dashboard_widget_toread_title": "To read",
+	"dashboard_widget_toread_empty": "Your backlog is empty — nothing unread. Nice!",
+	"dashboard_widget_toread_noresults": "No volumes match your search.",
+	"dashboard_widget_toread_search": "Search title or author…",
+	"dashboard_widget_toread_sort_label": "Sort by",
+	"dashboard_widget_toread_sort_series_asc": "Series A–Z",
+	"dashboard_widget_toread_sort_series_desc": "Series Z–A",
+	"dashboard_widget_toread_sort_author_asc": "Author A–Z",
+	"dashboard_widget_toread_sort_volume_asc": "Volume ↑",
+	"dashboard_widget_toread_sort_volume_desc": "Volume ↓",
+	"dashboard_widget_toread_startreading": "Start reading",
+	"dashboard_widget_toread_success_started": "Started reading",
+	"dashboard_widget_toread_error_started": "Failed to start reading",
+
+	"dashboard_widget_carousel_page": "Page {page} of {totalPages}",
+
 	"series_title": "Series Collection",
 	"series_search_placeholder": "Search title or author...",
 	"series_search_help_title": "Search help",

@@ -30,6 +30,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		};
 	});
 
+	const unread = await db
+		.select()
+		.from(book)
+		.innerJoin(series, eq(series.id, book.seriesId))
+		.where(and(eq(book.status, 'Owned'), eq(book.readStatus, 'Not Read'), eq(book.userId, userId)));
+
 	const totalVolumesOwned = (
 		await db
 			.select({ total: count() })
@@ -70,6 +76,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		ordered: orderedMarked,
+		unread,
 		kpi: {
 			series: {
 				count: totalSeriesCount

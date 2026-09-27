@@ -1,28 +1,31 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import BookCover from '$lib/components/BookCover.svelte';
+	import BookCard from '$lib/components/dashboard/BookCard.svelte';
 	import { getReading } from '$lib/components/forms/book/getReading.remote';
 	import { markOwned } from '$lib/components/forms/book/markOwned.remote';
 	import { markRead } from '$lib/components/forms/book/markRead.remote';
+	import { updateBookReadStatus } from '$lib/components/forms/book/updateBookReadStatus.remote';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import { coverSrc } from '$lib/fileUrl';
 	import { m } from '$lib/paraglide/messages';
 	import { createRemoteActionHandler } from '$lib/utils/formUtils';
 	import {
-		type Icon,
-		ArrowUpRight,
+		Book,
 		BookCheck,
-		BookOpen,
-		PackageCheck,
-		ShoppingBag,
-		Library,
 		BookHeart,
+		BookMarked,
+		BookOpen,
+		ChevronLeft,
+		ChevronRight,
+		Library,
 		Package,
-		Book
+		PackageCheck,
+		Play,
+		ShoppingBag
 	} from '@lucide/svelte';
+	import { Carousel, Marquee, Progress } from '@skeletonlabs/skeleton-svelte';
 	import type { PageProps } from './$types';
-	import { Marquee } from '@skeletonlabs/skeleton-svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let { data }: PageProps = $props();
 
@@ -47,19 +50,54 @@
 		{ label: m.dashboard_kpimarquee_orders(), icon: Package, stat: data.kpi.orders.count }
 	]);
 
-	const radius = 52;
-	const circumference = 2 * Math.PI * radius;
-
-	const progress = $derived(
-		data.kpi.volumes.countOwned && data.kpi.volumes.countOwned > 0
-			? Math.min(1, (data.kpi.volumes.countRead ?? 0) / data.kpi.volumes.countOwned)
-			: 0
-	);
-	const percentage = $derived(Math.round(progress * 100));
-	const offset = $derived(circumference * (1 - progress));
+	const ownedCount = $derived(data.kpi.volumes.countOwned ?? 0);
+	const readCount = $derived(data.kpi.volumes.countRead ?? 0);
+	const percentage = $derived(ownedCount > 0 ? Math.round((readCount / ownedCount) * 100) : 0);
 
 	const reading = getReading();
 	let pendingOwnedBookId = $state<string | null>(null);
+
+	const perPage = (count: number) => {
+		if (lgMedia.current) {
+			return count < 4 ? count : 4;
+		} else if (mdMedia.current) {
+			return count < 3 ? count : 3;
+		} else if (smMedia.current) {
+			return count < 2 ? count : 2;
+		} else {
+			return 1;
+		}
+	};
+
+	const lgMedia = new MediaQuery('min-width: 64rem');
+	const mdMedia = new MediaQuery('min-width: 48rem');
+	const smMedia = new MediaQuery('min-width: 40rem');
+
+	type ToReadItem = (typeof data.unread)[number];
+	type SortKey = 'series-asc' | 'series-desc' | 'author-asc' | 'volume-asc' | 'volume-desc';
+
+	let toReadQuery = $state('');
+	let toReadSort = $state<SortKey>('series-asc');
+	const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+
+	function compareToRead(a: ToReadItem, b: ToReadItem) {
+		const byTitle = collator.compare(a.series.title, b.series.title);
+		const byVolume = a.book.volumeNumber - b.book.volumeNumber;
+
+		return byTitle || byVolume;
+	}
+
+	const toRead = $derived.by(() => {
+		const query = toReadQuery.trim().toLocaleLowerCase();
+		const items = query
+			? data.unread.filter(
+					(item) =>
+						item.series.title.toLocaleLowerCase().includes(query) ||
+						(item.series.author ?? '').toLocaleLowerCase().includes(query)
+				)
+			: data.unread;
+		return items.toSorted((a, b) => compareToRead(a, b));
+	});
 
 	function requiresOwnedConfirmation(item: (typeof data.ordered)[number]) {
 		return !item.inOrder && (!item.book.boughtAt || item.book.paidPrice === null);
@@ -77,17 +115,28 @@
 			onSuccess: () => invalidateAll()
 		})();
 	}
+
+	function advanceBook(run: () => Promise<unknown>, opts: { success: string; error: string }) {
+		return createRemoteActionHandler({
+			...opts,
+			run,
+			onSuccess: async () => {
+				await invalidateAll();
+				await reading.refresh();
+			}
+		});
+	}
 </script>
 
-<main class="mx-auto max-w-6xl">
-	<Marquee autoFill pauseOnInteraction class="p-2">
+<main class="mx-auto max-w-6xl space-y-2 p-2">
+	<Marquee autoFill pauseOnInteraction>
 		<Marquee.Edge side="start" />
 		<Marquee.Viewport>
 			<Marquee.Context>
 				{#snippet children(marquee)}
-					{#each Array.from({ length: marquee().contentCount }) as _, index}
+					{#each [...Array(marquee().contentCount).keys()] as index (index)}
 						<Marquee.Content {index}>
-							{#each kpiMarquee as item}
+							{#each kpiMarquee as item (item.label)}
 								{@const KPIIcon = item.icon}
 								<div class="flex items-center gap-2 card bg-surface-100-900 p-2 whitespace-nowrap">
 									<span><KPIIcon /></span>
@@ -103,177 +152,272 @@
 		<Marquee.Edge side="end" />
 	</Marquee>
 
-	<div class="mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
-		<section
-			class="flex flex-col items-center justify-center gap-4 card preset-filled-surface-100-900 p-6"
-		>
+	<!-- Reading progress -->
+	<section class="space-y-2 card preset-filled-surface-100-900 p-2">
+		<div class="flex items-center gap-2">
+			<BookCheck class="size-5" />
 			<h2 class="text-xl font-semibold">{m.dashboard_widget_readprogress()}</h2>
-			{#if data.kpi.volumes.countOwned != undefined && data.kpi.volumes.countRead != undefined}
-				<div class="relative">
-					<svg class="size-40 -rotate-90" viewBox="0 0 120 120">
-						<circle
-							class="text-surface-200-800"
-							cx="60"
-							cy="60"
-							r={radius}
-							fill="none"
-							stroke="currentColor"
-							stroke-width="10"
-						/>
-						<circle
-							class="text-primary-500"
-							cx="60"
-							cy="60"
-							r={radius}
-							fill="none"
-							stroke="currentColor"
-							stroke-width="10"
-							stroke-linecap="round"
-							stroke-dasharray={circumference}
-							stroke-dashoffset={offset}
-						/>
-					</svg>
-					<div class="absolute inset-0 flex flex-col items-center justify-center">
-						<span class="text-3xl font-bold">{percentage}%</span>
-						<span class="text-surface-500-500 text-xs">
-							{data.kpi.volumes.countRead} / {data.kpi.volumes.countOwned}
-						</span>
-					</div>
-				</div>
-			{:else}
-				<p class="text-error-500">{m.dashboard_error_occurred()}</p>
-			{/if}
-		</section>
-
-		<section class="card preset-filled-surface-100-900 p-4">
-			<div class="mb-4 flex items-center gap-2">
-				<BookOpen class="size-5" />
-				<h2 class="text-xl font-semibold">{m.dashboard_widget_reading_title()}</h2>
+		</div>
+		<Progress value={percentage}>
+			<div class="flex items-baseline justify-between gap-2">
+				<Progress.Label class="text-sm text-surface-500">
+					{m.dashboard_widget_readprogress_label({ read: readCount, owned: ownedCount })}
+				</Progress.Label>
+				<span class="text-lg font-bold tabular-nums">{percentage}%</span>
 			</div>
-			{#await reading then books}
-				{#if books.length > 0}
-					<ul class="space-y-3">
-						{#each books as item (item.book.id)}
-							{@const onMarkRead = createRemoteActionHandler({
-								success: m.dashboard_widget_reading_success_bookcomplted(),
-								error: m.dashboard_widget_reading_error_bookcomplted(),
-								run: () => markRead({ id: item.book.id, readStatus: 'Completed' }),
-								onSuccess: () => reading.refresh()
-							})}
-							<li class="flex items-center gap-3">
-								<a href={resolve(`/series/${item.series.id}/${item.book.id}`)} class="shrink-0">
-									<BookCover
+			<Progress.Track>
+				<Progress.Range class="bg-primary-500" />
+			</Progress.Track>
+		</Progress>
+	</section>
+
+	<!-- Currently reading -->
+	<section class="space-y-2 card preset-filled-surface-100-900 p-2">
+		<div class="flex items-center gap-2">
+			<BookOpen class="size-5" />
+			<h2 class="text-xl font-semibold">{m.dashboard_widget_reading_title()}</h2>
+		</div>
+		{#await reading then books}
+			{#if books.length > 0}
+				<Carousel
+					slideCount={books.length}
+					slidesPerPage={perPage(books.length)}
+					spacing=".25rem"
+					padding="1rem"
+					loop
+				>
+					<div class="relative">
+						<Carousel.Control>
+							<Carousel.PrevTrigger
+								class="absolute top-1/2 left-0 z-10 btn -translate-y-1/2 rounded-full preset-filled-primary-500 p-2"
+							>
+								<ChevronLeft class="size-4" />
+							</Carousel.PrevTrigger>
+							<Carousel.NextTrigger
+								class="absolute top-1/2 right-0 z-10 btn -translate-y-1/2 rounded-full preset-filled-primary-500 p-2"
+							>
+								<ChevronRight class="size-4" />
+							</Carousel.NextTrigger>
+						</Carousel.Control>
+						<Carousel.ItemGroup>
+							{#each books as item, index (item.book.id)}
+								{@const onMarkRead = advanceBook(
+									() => markRead({ id: item.book.id, readStatus: 'Completed' }),
+									{
+										success: m.dashboard_widget_reading_success_bookcomplted(),
+										error: m.dashboard_widget_reading_error_bookcomplted()
+									}
+								)}
+								<Carousel.Item {index} class="h-full">
+									<BookCard
+										seriesId={item.series.id}
+										bookId={item.book.id}
+										title={item.series.title}
+										volumeNumber={item.book.volumeNumber}
 										src={coverSrc(item.book)}
 										alt={m.dashboard_cover_alt({ title: item.series.title })}
-										imgClass="h-24 w-16 rounded object-cover"
-										fallbackClass="h-24 w-16 rounded"
-										label={m.dashboard_widget_reading_nocover()}
+										noCoverLabel={m.dashboard_widget_reading_nocover()}
+										openLabel={m.dashboard_widget_reading_openbook()}
+										primaryAction={{
+											label: m.dashboard_widget_reading_markcompleted(),
+											icon: BookCheck,
+											onclick: onMarkRead
+										}}
 									/>
-								</a>
-								<div class="min-w-0 flex-1">
-									<a
-										href={resolve(`/series/${item.series.id}/${item.book.id}`)}
-										class="hover:underline"
-									>
-										<p class="truncate font-medium">{item.series.title}</p>
-									</a>
-									<p class="text-surface-500-500 text-sm">
-										{m.dashboard_widget_reading_volume({ volumeNumber: item.book.volumeNumber })}
-									</p>
-								</div>
-								<div class="flex gap-1">
-									<button
-										type="button"
-										class="btn preset-filled-success-500 p-2"
-										title={m.dashboard_widget_reading_markcompleted()}
-										onclick={onMarkRead}
-									>
-										<BookCheck class="size-4" />
-									</button>
-									<a
-										href={resolve(`/series/${item.series.id}/${item.book.id}`)}
-										class="btn preset-filled-primary-500 p-2"
-										title={m.dashboard_widget_reading_openbook()}
-									>
-										<ArrowUpRight class="size-4" />
-									</a>
-								</div>
-							</li>
-						{/each}
-					</ul>
-				{:else}
-					<p class="text-surface-500-500 text-sm">{m.dashboard_widget_reading_empty()}</p>
-				{/if}
-			{/await}
-		</section>
+								</Carousel.Item>
+							{/each}
+						</Carousel.ItemGroup>
+					</div>
+					<Carousel.Context>
+						{#snippet children(carousel)}
+							<div class="mt-2 flex items-center justify-center font-medium">
+								<span>
+									{m.dashboard_widget_carousel_page({
+										page: carousel().page + 1,
+										totalPages: carousel().pageSnapPoints.length
+									})}
+								</span>
+							</div>
+						{/snippet}
+					</Carousel.Context>
+				</Carousel>
+			{:else}
+				<p class="text-sm text-surface-500">{m.dashboard_widget_reading_empty()}</p>
+			{/if}
+		{/await}
+	</section>
 
-		<section class="card preset-filled-surface-100-900 p-4 md:col-span-2 lg:col-span-1">
-			<div class="mb-4 flex items-center gap-2">
-				<ShoppingBag class="size-5" />
-				<h2 class="text-xl font-semibold">{m.dashboard_widget_ordered_title()}</h2>
-			</div>
-			{#if data.ordered.length > 0}
-				<ul class="space-y-3">
-					{#each data.ordered as item (item.book.id)}
-						{@const onMarkOwned = createRemoteActionHandler({
-							success: m.dashboard_widget_ordered_success_bookowned(),
-							error: m.dashboard_widget_ordered_error_bookowned(),
-							run: () => markOwned({ id: item.book.id, status: 'Owned' }),
-							onSuccess: () => invalidateAll()
-						})}
-						{@const handleMarkOwned = () => {
-							if (requiresOwnedConfirmation(item)) {
-								pendingOwnedBookId = item.book.id;
-								return;
-							}
-							onMarkOwned();
-						}}
-						<li class="flex items-center gap-3">
-							<a href={resolve(`/series/${item.series.id}/${item.book.id}`)} class="shrink-0">
-								<BookCover
+	<!-- Ordered -->
+	<section class="space-y-2 card preset-filled-surface-100-900 p-2">
+		<div class="flex items-center gap-2">
+			<ShoppingBag class="size-5" />
+			<h2 class="text-xl font-semibold">{m.dashboard_widget_ordered_title()}</h2>
+		</div>
+		{#if data.ordered.length > 0}
+			<Carousel
+				slideCount={data.ordered.length}
+				slidesPerPage={perPage(data.ordered.length)}
+				spacing=".25rem"
+				padding="1rem"
+				loop
+			>
+				<div class="relative">
+					<Carousel.Control>
+						<Carousel.PrevTrigger
+							class="absolute top-1/2 left-0 z-10 btn -translate-y-1/2 rounded-full preset-filled-primary-500 p-2"
+						>
+							<ChevronLeft class="size-4" />
+						</Carousel.PrevTrigger>
+						<Carousel.NextTrigger
+							class="absolute top-1/2 right-0 z-10 btn -translate-y-1/2 rounded-full preset-filled-primary-500 p-2"
+						>
+							<ChevronRight class="size-4" />
+						</Carousel.NextTrigger>
+					</Carousel.Control>
+					<Carousel.ItemGroup>
+						{#each data.ordered as item, index (item.book.id)}
+							{@const onMarkOwned = advanceBook(
+								() => markOwned({ id: item.book.id, status: 'Owned' }),
+								{
+									success: m.dashboard_widget_ordered_success_bookowned(),
+									error: m.dashboard_widget_ordered_error_bookowned()
+								}
+							)}
+							{@const handleMarkOwned = () => {
+								if (requiresOwnedConfirmation(item)) {
+									pendingOwnedBookId = item.book.id;
+									return;
+								}
+								onMarkOwned();
+							}}
+							<Carousel.Item {index} class="h-full">
+								<BookCard
+									seriesId={item.series.id}
+									bookId={item.book.id}
+									title={item.series.title}
+									volumeNumber={item.book.volumeNumber}
 									src={coverSrc(item.book)}
 									alt={m.dashboard_cover_alt({ title: item.series.title })}
-									imgClass="h-24 w-16 rounded object-cover"
-									fallbackClass="h-24 w-16 rounded"
-									label={m.dashboard_widget_reading_nocover()}
+									noCoverLabel={m.dashboard_widget_reading_nocover()}
+									openLabel={m.dashboard_widget_reading_openbook()}
+									primaryAction={{
+										label: m.dashboard_widget_ordered_markowned(),
+										icon: PackageCheck,
+										onclick: handleMarkOwned
+									}}
 								/>
-							</a>
-							<div class="min-w-0 flex-1">
-								<a
-									href={resolve(`/series/${item.series.id}/${item.book.id}`)}
-									class="hover:underline"
-								>
-									<p class="truncate font-medium">{item.series.title}</p>
-								</a>
-								<p class="text-surface-500-500 text-sm">
-									{m.dashboard_widget_reading_volume({ volumeNumber: item.book.volumeNumber })}
-								</p>
-							</div>
-							<div class="flex gap-1">
-								<button
-									type="button"
-									class="btn preset-filled-success-500 p-2"
-									title={m.dashboard_widget_ordered_markowned()}
-									onclick={handleMarkOwned}
-								>
-									<PackageCheck class="size-4" />
-								</button>
-								<a
-									href={resolve(`/series/${item.series.id}/${item.book.id}`)}
-									class="btn preset-filled-primary-500 p-2"
-									title={m.dashboard_widget_reading_openbook()}
-								>
-									<ArrowUpRight class="size-4" />
-								</a>
-							</div>
-						</li>
-					{/each}
-				</ul>
-			{:else}
-				<p class="text-surface-500-500 text-sm">{m.dashboard_widget_ordered_empty()}</p>
+							</Carousel.Item>
+						{/each}
+					</Carousel.ItemGroup>
+				</div>
+				<Carousel.Context>
+					{#snippet children(carousel)}
+						<div class="mt-2 flex items-center justify-center font-medium">
+							<span>
+								{m.dashboard_widget_carousel_page({
+									page: carousel().page + 1,
+									totalPages: carousel().pageSnapPoints.length
+								})}
+							</span>
+						</div>
+					{/snippet}
+				</Carousel.Context>
+			</Carousel>
+		{:else}
+			<p class="text-sm text-surface-500">{m.dashboard_widget_ordered_empty()}</p>
+		{/if}
+	</section>
+
+	<!-- To read -->
+	<section class="space-y-2 card preset-filled-surface-100-900 p-2">
+		<div class="flex items-center gap-2">
+			<BookMarked class="size-5" />
+			<h2 class="text-xl font-semibold">{m.dashboard_widget_toread_title()}</h2>
+			{#if data.unread.length > 0}
+				<span class="text-sm text-surface-500">({data.unread.length})</span>
 			{/if}
-		</section>
-	</div>
+		</div>
+		{#if data.unread.length > 0}
+			<div class="flex items-center">
+				<input
+					type="search"
+					class="input"
+					placeholder={m.dashboard_widget_toread_search()}
+					aria-label={m.dashboard_widget_toread_search()}
+					bind:value={toReadQuery}
+				/>
+			</div>
+		{/if}
+		{#if data.unread.length === 0}
+			<p class="text-sm text-surface-500">{m.dashboard_widget_toread_empty()}</p>
+		{:else if toRead.length === 0}
+			<p class="text-sm text-surface-500">{m.dashboard_widget_toread_noresults()}</p>
+		{:else}
+			<Carousel
+				slideCount={toRead.length}
+				slidesPerPage={perPage(toRead.length)}
+				spacing=".25rem"
+				padding="1rem"
+				loop
+			>
+				<div class="relative">
+					<Carousel.Control>
+						<Carousel.PrevTrigger
+							class="absolute top-1/2 left-0 z-10 btn -translate-y-1/2 rounded-full preset-filled-primary-500 p-2"
+						>
+							<ChevronLeft class="size-4" />
+						</Carousel.PrevTrigger>
+						<Carousel.NextTrigger
+							class="absolute top-1/2 right-0 z-10 btn -translate-y-1/2 rounded-full preset-filled-primary-500 p-2"
+						>
+							<ChevronRight class="size-4" />
+						</Carousel.NextTrigger>
+					</Carousel.Control>
+					<Carousel.ItemGroup>
+						{#each toRead as item, index (item.book.id)}
+							{@const onStartReading = advanceBook(
+								() => updateBookReadStatus({ id: item.book.id, readStatus: 'Reading' }),
+								{
+									success: m.dashboard_widget_toread_success_started(),
+									error: m.dashboard_widget_toread_error_started()
+								}
+							)}
+							<Carousel.Item {index} class="h-full">
+								<BookCard
+									seriesId={item.series.id}
+									bookId={item.book.id}
+									title={item.series.title}
+									volumeNumber={item.book.volumeNumber}
+									src={coverSrc(item.book)}
+									alt={m.dashboard_cover_alt({ title: item.series.title })}
+									noCoverLabel={m.dashboard_widget_reading_nocover()}
+									openLabel={m.dashboard_widget_reading_openbook()}
+									primaryAction={{
+										label: m.dashboard_widget_toread_startreading(),
+										icon: Play,
+										onclick: onStartReading
+									}}
+								/>
+							</Carousel.Item>
+						{/each}
+					</Carousel.ItemGroup>
+				</div>
+				<Carousel.Context>
+					{#snippet children(carousel)}
+						<div class="mt-2 flex items-center justify-center font-medium">
+							<span>
+								{m.dashboard_widget_carousel_page({
+									page: carousel().page + 1,
+									totalPages: carousel().pageSnapPoints.length
+								})}
+							</span>
+						</div>
+					{/snippet}
+				</Carousel.Context>
+			</Carousel>
+		{/if}
+	</section>
+
 	<InfoDialog
 		open={pendingOwnedBookId !== null}
 		title={m.dashboard_widget_ordered_incomplete_title()}
