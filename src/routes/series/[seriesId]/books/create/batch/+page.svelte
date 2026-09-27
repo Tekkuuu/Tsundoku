@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { ChevronLeft, Dot, Monitor, Plus, Trash2 } from '@lucide/svelte';
+	import { ChevronLeft, Dot, Plus, Trash2 } from '@lucide/svelte';
 	import { book } from '$lib/validation';
 	import type { BookStatus, CreateBooksBatch, ReadStatus } from '$lib/validation/book';
 	import {

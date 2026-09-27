@@ -74,10 +74,8 @@
 	const smMedia = new MediaQuery('min-width: 40rem');
 
 	type ToReadItem = (typeof data.unread)[number];
-	type SortKey = 'series-asc' | 'series-desc' | 'author-asc' | 'volume-asc' | 'volume-desc';
 
 	let toReadQuery = $state('');
-	let toReadSort = $state<SortKey>('series-asc');
 	const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
 
 	function compareToRead(a: ToReadItem, b: ToReadItem) {

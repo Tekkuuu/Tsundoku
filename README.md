@@ -49,10 +49,11 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - Desktop and Mobile friendly layout
 
 ### 🌎 Translations
-| Language | Translated by                               |
-| -------- | ------------------------------------------- |
-| English  | [@Tekkuuu](https://github.com/Tekkuuu)      |
-| Polish   | [@Tekkuuu](https://github.com/Tekkuuu)      |
+
+| Language | Translated by                          |
+| -------- | -------------------------------------- |
+| English  | [@Tekkuuu](https://github.com/Tekkuuu) |
+| Polish   | [@Tekkuuu](https://github.com/Tekkuuu) |
 
 Help with translations to other languages is appreciated!
 See `messages/en.json` for reference
@@ -80,14 +81,14 @@ See `messages/en.json` for reference
 cp .env.example .env
 ```
 
-| Variable             | Required | Default                      | Description                                                                                     |
-| -------------------- | -------- | ---------------------------- | ----------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`       | yes      | —                            | Postgres connection string, e.g. `postgres://tsundoku:tsundoku@localhost:5432/tsundoku`         |
-| `BETTER_AUTH_SECRET` | yes      | —                            | 32+ char secret for sessions. Generate with e.g. `openssl rand -base64 32`                      |
-| `ORIGIN`             | no       | `http://localhost:5173`      | Public base URL. Required in production for CSRF/cookies, e.g. `https://tsundoku.example.com`   |
-| `MAX_USERS`          | no       | `1`                          | Registration cap. `1` = single-user, `0` = disabled, empty = unlimited                          |
-| `LOG_LEVEL`          | no       | `info`                       | Pino log level: `fatal, error, warn, info, debug, trace, silent`                                |
-| `DATA_DIR`           | no       | `./data` (`/data` in Docker) | Directory for self-hosted uploads (covers, receipts). Served only to their owner                |
+| Variable             | Required | Default                      | Description                                                                                   |
+| -------------------- | -------- | ---------------------------- | --------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`       | yes      | —                            | Postgres connection string, e.g. `postgres://tsundoku:tsundoku@localhost:5432/tsundoku`       |
+| `BETTER_AUTH_SECRET` | yes      | —                            | 32+ char secret for sessions. Generate with e.g. `openssl rand -base64 32`                    |
+| `ORIGIN`             | no       | `http://localhost:5173`      | Public base URL. Required in production for CSRF/cookies, e.g. `https://tsundoku.example.com` |
+| `MAX_USERS`          | no       | `1`                          | Registration cap. `1` = single-user, `0` = disabled, empty = unlimited                        |
+| `LOG_LEVEL`          | no       | `info`                       | Pino log level: `fatal, error, warn, info, debug, trace, silent`                              |
+| `DATA_DIR`           | no       | `./data` (`/data` in Docker) | Directory for self-hosted uploads (covers, receipts). Served only to their owner              |
 
 ### 1) Run from repo with docker
 
@@ -193,12 +194,13 @@ pnpm install
 pnpm db:migrate
 ```
 
-**or**
+**or**, using the production docker compose:
 
 ```sh
-docker compose pull ghcr.io/tekkuuu/tsundoku:latest
+docker compose pull
+docker compose up -d
 ```
 
-if using the production docker compose. It will run migration from the new version automatically, so **backup** before updating!
+It applies migrations from the new version automatically, so **backup** before updating!
 
 Since this project is in a very early stage expect database schema changes. I will try my best to make them clean but for your own sanity please backup before upgrading!
