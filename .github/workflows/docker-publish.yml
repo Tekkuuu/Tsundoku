@@ -1,13 +1,7 @@
-# Builds the production image (Dockerfile) and publishes it to GHCR
-# as ghcr.io/<owner>/<repo>. No personal token needed: the built-in
-# GITHUB_TOKEN works with `packages: write`.
-#
-# Runs only on pushes to master (including merges) and on version tags.
 name: Publish Docker image
 
 on:
   push:
-    branches: [master]
     tags: ['v*']
 
 jobs:
@@ -29,8 +23,9 @@ jobs:
         id: meta
         with:
           images: ghcr.io/${{ github.repository }}
+          flavor: |
+            latest=auto
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=sha
 

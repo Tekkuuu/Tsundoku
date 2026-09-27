@@ -36,6 +36,31 @@
 
 	"dashboard_cover_alt": "Okładka: {title}",
 
+	"dashboard_kpimarquee_series": "Serie",
+	"dashboard_kpimarquee_ownedvolumes": "Posiadane tomy",
+	"dashboard_kpimarquee_readvolumes": "Przeczytane tomy",
+	"dashboard_kpimarquee_orderedvolumes": "Zamówione tomy",
+	"dashboard_kpimarquee_wishlistedvolumes": "Tomy na liście życzeń",
+	"dashboard_kpimarquee_orders": "Zamówienia",
+
+	"dashboard_widget_readprogress_label": "{read} / {owned} tomów",
+
+	"dashboard_widget_toread_title": "Do przeczytania",
+	"dashboard_widget_toread_empty": "Twoja lista zaległości jest pusta — brak nieprzeczytanych tomów. Świetnie!",
+	"dashboard_widget_toread_noresults": "Brak tomów pasujących do wyszukiwania.",
+	"dashboard_widget_toread_search": "Szukaj tytułu lub autora…",
+	"dashboard_widget_toread_sort_label": "Sortuj według",
+	"dashboard_widget_toread_sort_series_asc": "Serie A–Z",
+	"dashboard_widget_toread_sort_series_desc": "Serie Z–A",
+	"dashboard_widget_toread_sort_author_asc": "Autor A–Z",
+	"dashboard_widget_toread_sort_volume_asc": "Tom ↑",
+	"dashboard_widget_toread_sort_volume_desc": "Tom ↓",
+	"dashboard_widget_toread_startreading": "Zacznij czytać",
+	"dashboard_widget_toread_success_started": "Rozpoczęto czytanie",
+	"dashboard_widget_toread_error_started": "Nie udało się rozpocząć czytania",
+
+	"dashboard_widget_carousel_page": "Strona {page} z {totalPages}",
+
 	"series_title": "Kolekcja serii",
 	"series_search_placeholder": "Wyszukaj tytuł lub autora...",
 	"series_search_help_title": "Pomoc wyszukiwania",
