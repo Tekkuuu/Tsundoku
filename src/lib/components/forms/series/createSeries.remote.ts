@@ -1,6 +1,6 @@
 import { form, getRequestEvent } from '$app/server';
 import { logger } from '$lib/server/logger';
-import { error, invalid } from '@sveltejs/kit';
+import { error, invalid, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { series } from '$lib/server/db/schema';
 import { isUniqueViolation } from '$lib/server/db/errors';
@@ -14,11 +14,18 @@ export const createSeries = form(CreateSeriesSchema, async (createdSeries) => {
 		error(401, 'Unauthorized');
 	}
 
+	let newSeriesId: string | undefined = undefined;
+
 	try {
-		await db.insert(series).values({
-			...createdSeries,
-			userId: locals.user.id
-		});
+		newSeriesId = (
+			await db
+				.insert(series)
+				.values({
+					...createdSeries,
+					userId: locals.user.id
+				})
+				.returning({ id: series.id })
+		).at(0)?.id;
 	} catch (err) {
 		if (isUniqueViolation(err, 'unique_user_series_title_author')) {
 			logger.warn({ userId: locals.user.id }, 'Duplicate series on create');
@@ -26,4 +33,6 @@ export const createSeries = form(CreateSeriesSchema, async (createdSeries) => {
 		}
 		throw err;
 	}
+
+	redirect(303, `/series/${newSeriesId}`);
 });
