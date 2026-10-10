@@ -8,6 +8,7 @@ import {
 	uuid,
 	index,
 	unique,
+	uniqueIndex,
 	check,
 	pgEnum
 } from 'drizzle-orm/pg-core';
@@ -51,7 +52,12 @@ export const series = pgTable(
 	},
 	(table) => [
 		index('series_userId_idx').on(table.userId),
-		index('series_author_idx').on(table.author)
+		index('series_author_idx').on(table.author),
+		uniqueIndex('unique_user_series_title_author').on(
+			table.userId,
+			sql`lower(btrim(${table.title}))`,
+			sql`lower(btrim(coalesce(${table.author}, '')))`
+		)
 	]
 );
 

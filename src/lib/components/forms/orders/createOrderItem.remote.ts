@@ -3,31 +3,9 @@ import { logger } from '$lib/server/logger';
 import { error, invalid } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { book, order, orderItem } from '$lib/server/db/schema';
+import { isUniqueViolation } from '$lib/server/db/errors';
 import { and, eq } from 'drizzle-orm';
 import { CreateOrderItemSchema } from '$lib/validation/order';
-
-function findPgError(err: unknown): {
-	code?: unknown;
-	constraint_name?: unknown;
-	constraint?: unknown;
-} | null {
-	let cur: unknown = err;
-	for (let i = 0; i < 4 && typeof cur === 'object' && cur !== null; i++) {
-		const e = cur as Record<string, unknown>;
-		if (e['code'] === '23505') {
-			return e as { code?: unknown; constraint_name?: unknown; constraint?: unknown };
-		}
-		cur = e['cause'];
-	}
-	return null;
-}
-
-function isUniqueBookViolation(err: unknown): boolean {
-	const pg = findPgError(err);
-	if (!pg) return false;
-	const constraint = String(pg.constraint_name ?? pg.constraint ?? '');
-	return !constraint || constraint.includes('unique_book_order');
-}
 
 export const createOrderItem = form(CreateOrderItemSchema, async (data, issue) => {
 	const { locals, params } = getRequestEvent();
@@ -114,7 +92,7 @@ export const createOrderItem = form(CreateOrderItemSchema, async (data, issue) =
 			);
 		});
 	} catch (err) {
-		if (isUniqueBookViolation(err)) {
+		if (isUniqueViolation(err, 'unique_book_order')) {
 			logger.warn({ userId: locals.user.id, orderId, bookId: data.bookId }, 'Duplicate order item');
 			invalid(issue.bookId('This book is already part of an order'));
 		}

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "unique_user_series_title_author" ON "series" USING btree ("user_id",lower(btrim("title")),lower(btrim(coalesce("author", ''))));

@@ -3,32 +3,10 @@ import { logger } from '$lib/server/logger';
 import { error, invalid } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { book, orderItem } from '$lib/server/db/schema';
+import { isUniqueViolation } from '$lib/server/db/errors';
 import { deleteOwnedFile, requireOwnedFile } from '$lib/server/files';
 import { UpdateBookSchema, parseBoughtAtMonth, isReadStatusAllowed } from '$lib/validation/book';
 import { and, eq } from 'drizzle-orm';
-
-function findPgError(err: unknown): {
-	code?: unknown;
-	constraint_name?: unknown;
-	constraint?: unknown;
-} | null {
-	let cur: unknown = err;
-	for (let i = 0; i < 4 && typeof cur === 'object' && cur !== null; i++) {
-		const e = cur as Record<string, unknown>;
-		if (e['code'] === '23505') {
-			return e as { code?: unknown; constraint_name?: unknown; constraint?: unknown };
-		}
-		cur = e['cause'];
-	}
-	return null;
-}
-
-function isUniqueVolumeViolation(err: unknown): boolean {
-	const pg = findPgError(err);
-	if (!pg) return false;
-	const constraint = String(pg.constraint_name ?? pg.constraint ?? '');
-	return !constraint || constraint.includes('unique_user_series_volume');
-}
 
 export const updateBook = form(UpdateBookSchema, async (data, issue) => {
 	const { locals } = getRequestEvent();
@@ -157,7 +135,7 @@ export const updateBook = form(UpdateBookSchema, async (data, issue) => {
 			})
 			.where(and(eq(book.id, id), eq(book.userId, locals.user.id)));
 	} catch (err) {
-		if (isUniqueVolumeViolation(err)) {
+		if (isUniqueViolation(err, 'unique_user_series_volume')) {
 			logger.warn({ userId: locals.user.id, bookId: id }, 'Duplicate book volume on update');
 			invalid(
 				issue.volumeNumber(

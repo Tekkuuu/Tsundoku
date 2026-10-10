@@ -5,7 +5,7 @@
 		deleteSeries,
 		getSeriesStatusText
 	} from '$lib/components/forms/series';
-	import { BookPlus, Ellipsis, Pencil, Plus, Trash2 } from '@lucide/svelte';
+	import { BookPlus, Ellipsis, ListPlus, Pencil, Plus, Trash2 } from '@lucide/svelte';
 	import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import Fuse from 'fuse.js';
 	import { resolve } from '$app/paths';
@@ -187,10 +187,20 @@
 
 <main class="p-2">
 	<div class="flex flex-col items-center gap-2">
-		<CreateSeriesDialog triggerClass="btn btn-sm preset-filled w-full max-w-6xl flex items-center">
-			<Plus class="size-4" />
-			{m.series_addnewseries()}
-		</CreateSeriesDialog>
+		<div class="flex w-full max-w-6xl items-center gap-2">
+			<CreateSeriesDialog triggerClass="btn btn-sm preset-filled flex flex-1 items-center">
+				<Plus class="size-4" />
+				{m.series_addnewseries()}
+			</CreateSeriesDialog>
+
+			<a
+				href={resolve('/series/create/batch')}
+				class="btn flex flex-1 items-center preset-tonal btn-sm"
+			>
+				<ListPlus class="size-4" />
+				{m.series_addnewbatch()}
+			</a>
+		</div>
 
 		<div class="mb-2 flex w-full max-w-6xl items-center justify-between gap-2">
 			<h1 class="text-lg font-bold">{m.series_title()}</h1>

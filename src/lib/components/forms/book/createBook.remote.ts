@@ -3,31 +3,9 @@ import { logger } from '$lib/server/logger';
 import { error, invalid } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { book } from '$lib/server/db/schema';
+import { isUniqueViolation } from '$lib/server/db/errors';
 import { requireOwnedFile } from '$lib/server/files';
 import { CreateBookSchema, parseBoughtAtMonth } from '$lib/validation/book';
-
-function findPgError(err: unknown): {
-	code?: unknown;
-	constraint_name?: unknown;
-	constraint?: unknown;
-} | null {
-	let cur: unknown = err;
-	for (let i = 0; i < 4 && typeof cur === 'object' && cur !== null; i++) {
-		const e = cur as Record<string, unknown>;
-		if (e['code'] === '23505') {
-			return e as { code?: unknown; constraint_name?: unknown; constraint?: unknown };
-		}
-		cur = e['cause'];
-	}
-	return null;
-}
-
-function isUniqueVolumeViolation(err: unknown): boolean {
-	const pg = findPgError(err);
-	if (!pg) return false;
-	const constraint = String(pg.constraint_name ?? pg.constraint ?? '');
-	return !constraint || constraint.includes('unique_user_series_volume');
-}
 
 export const createBook = form(CreateBookSchema, async (data, issue) => {
 	const { locals } = getRequestEvent();
@@ -68,7 +46,7 @@ export const createBook = form(CreateBookSchema, async (data, issue) => {
 			boughtAt: parseBoughtAtMonth(boughtAt) ?? null
 		});
 	} catch (err) {
-		if (isUniqueVolumeViolation(err)) {
+		if (isUniqueViolation(err, 'unique_user_series_volume')) {
 			logger.warn({ userId: locals.user.id, seriesId: data.seriesId }, 'Duplicate book volume');
 			invalid(issue.volumeNumber(`Vol. ${data.volumeNumber} already exists`));
 		}

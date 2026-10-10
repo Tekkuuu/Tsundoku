@@ -10,6 +10,10 @@ const base = z.object({
 
 export const CreateSeriesSchema = base;
 
+export const CreateSeriesBatchSchema = z.object({
+	series: z.array(base).min(1, { message: 'Add at least one series' })
+});
+
 export const UpdateSeriesSchema = base.partial().extend({
 	id: z.uuidv4().nonempty()
 });
@@ -29,6 +33,7 @@ export const DeleteSeriesSchema = z.object({
 });
 
 export type CreateSeries = z.infer<typeof CreateSeriesSchema>;
+export type CreateSeriesBatch = z.infer<typeof CreateSeriesBatchSchema>;
 export type UpdateSeries = z.infer<typeof UpdateSeriesSchema>;
 export type SelectSeries = z.infer<typeof SelectSeriesSchema>;
 export type UpdateSeriesStatus = z.infer<typeof UpdateSeriesStatusSchema>;
