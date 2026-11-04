@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Pathname } from '$app/types';
+	import type { Path } from '$app/types';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { locales, localizeHref } from '$lib/paraglide/runtime';
+	import { locales, localizeHref } from '#lib/paraglide/runtime.js';
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '#lib/assets/favicon.svg';
 	import { AppBar, Navigation, Toast, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { goto } from '$app/navigation';
 	import {
@@ -18,25 +18,46 @@
 		ShoppingCart,
 		ChartPie
 	} from '@lucide/svelte';
-	import { authClient } from '$lib/auth-client';
-	import { invalidateAll } from '$app/navigation';
-	import { toaster } from '$lib/components/toaster';
-	import { m } from '$lib/paraglide/messages';
+	import { authClient } from '#lib/client/auth.js';
+	import { refreshAll } from '$app/navigation';
+	import { toaster } from '#lib/client/toaster.js';
+	import { m } from '#lib/paraglide/messages.js';
 
 	let { children } = $props();
 	let session = authClient.useSession();
 
 	const navLinks = [
-		{ label: () => m.nav_series(), href: resolve('/series') },
-		{ label: () => m.nav_orders(), href: resolve('/orders') },
-		{ label: () => m.nav_stats(), href: resolve('/stats') }
+		{ label: () => m.nav_series(), href: resolve('series') },
+		{ label: () => m.nav_orders(), href: resolve('orders') },
+		{ label: () => m.nav_stats(), href: resolve('stats') }
 	];
 
 	const dockLinks = [
-		{ label: () => m.nav_home(), href: resolve('/'), icon: House, home: true },
-		{ label: () => m.nav_series(), href: resolve('/series'), icon: BookOpen, home: false },
-		{ label: () => m.nav_orders(), href: resolve('/orders'), icon: ShoppingCart, home: false },
-		{ label: () => m.nav_stats(), href: resolve('/stats'), icon: ChartPie, home: false }
+		{
+			label: () => m.nav_home(),
+			href: resolve('/'),
+			icon: House,
+			home: true
+		},
+
+		{
+			label: () => m.nav_series(),
+			href: resolve('series'),
+			icon: BookOpen,
+			home: false
+		},
+		{
+			label: () => m.nav_orders(),
+			href: resolve('orders'),
+			icon: ShoppingCart,
+			home: false
+		},
+		{
+			label: () => m.nav_stats(),
+			href: resolve('stats'),
+			icon: ChartPie,
+			home: false
+		}
 	];
 
 	function isActive(href: string) {
@@ -49,12 +70,12 @@
 
 	async function handleLogout() {
 		await authClient.signOut();
-		invalidateAll();
+		refreshAll();
 	}
 
 	function handleAccountSelect(event: { value: string }) {
-		if (event.value === 'settings') goto(resolve('/user/settings'));
-		else if (event.value === 'login') goto(resolve('/login'));
+		if (event.value === 'settings') goto(resolve('user/settings'));
+		else if (event.value === 'login') goto(resolve('login'));
 		else if (event.value === 'logout') handleLogout();
 	}
 </script>
@@ -96,13 +117,17 @@
 									<p class="truncate text-sm font-medium">
 										{$session.data.user.name ?? $session.data.user.email}
 									</p>
-									<p class="truncate text-xs opacity-70">{$session.data.user.email}</p>
+									<p class="truncate text-xs opacity-70">
+										{$session.data.user.email}
+									</p>
 								</div>
 								<Menu.Separator class="my-1 h-px border-0 bg-surface-200-800" />
+
 								<Menu.Item value="settings" class="btn w-full justify-start gap-2">
 									<Settings class="size-4" />
 									{m.settings_title()}
 								</Menu.Item>
+
 								<Menu.Item
 									value="preferences"
 									disabled
@@ -120,13 +145,13 @@
 					</Portal>
 				</Menu>
 			{:else}
-				<a href={resolve('/login')} class="btn preset-filled-primary-500">{m.nav_login()}</a>
+				<a href={resolve('login')} class="btn preset-filled-primary-500">{m.nav_login()}</a>
 			{/if}
 		</AppBar.Trail>
 	</AppBar.Toolbar>
 </AppBar>
 
-<main class="pb-20 md:pb-0">
+<main class="mt-2 flex flex-col items-center px-2 pb-20 md:pb-0">
 	{@render children()}
 </main>
 
@@ -168,14 +193,18 @@
 								<p class="truncate text-sm font-medium">
 									{$session.data.user.name ?? $session.data.user.email}
 								</p>
-								<p class="truncate text-xs opacity-70">{$session.data.user.email}</p>
+								<p class="truncate text-xs opacity-70">
+									{$session.data.user.email}
+								</p>
 							</div>
 							<Menu.Separator class="my-1 h-px border-0 bg-surface-200-800" />
 						{/if}
+
 						<Menu.Item value="settings" class="btn w-full justify-start gap-2">
 							<Settings class="size-4" />
 							{m.settings_title()}
 						</Menu.Item>
+
 						<Menu.Item
 							value="preferences"
 							disabled
@@ -204,7 +233,7 @@
 
 <div style="display:none">
 	{#each locales as locale (locale)}
-		<a href={resolve(localizeHref(page.url.pathname, { locale }) as Pathname)}>{locale}</a>
+		<a href={resolve(localizeHref(page.url.pathname, { locale }) as Path)}>{locale}</a>
 	{/each}
 </div>
 

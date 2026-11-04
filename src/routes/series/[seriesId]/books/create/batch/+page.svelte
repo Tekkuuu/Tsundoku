@@ -2,18 +2,15 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { ChevronLeft, Dot, Plus, Trash2 } from '@lucide/svelte';
-	import { book } from '$lib/validation';
-	import type { BookStatus, CreateBooksBatch, ReadStatus } from '$lib/validation/book';
-	import {
-		createBooksBatch,
-		getBookStatusText,
-		getReadStatusText
-	} from '$lib/components/forms/book';
-	import BatchBulkMenu, { type BulkTarget } from '$lib/components/BatchBulkMenu.svelte';
-	import BatchRowMenu, { type BatchCell } from '$lib/components/BatchRowMenu.svelte';
-	import { createEnhanceHandler } from '$lib/utils/formUtils';
-	import { applyToRows, createRowSelection, formatIssueLines } from '$lib/utils/table';
-	import { m } from '$lib/paraglide/messages';
+	import { book } from '#lib/shared/validation/index.js';
+	import type { BookStatus, CreateBooksBatch, ReadStatus } from '#lib/shared/validation/book.js';
+	import { createBooksBatch } from '#lib/remote/books.remote.js';
+	import { getBookStatusText, getReadStatusText } from '#lib/components/book/book-labels.js';
+	import BatchBulkMenu, { type BulkTarget } from '#lib/components/table/BatchBulkMenu.svelte';
+	import BatchRowMenu, { type BatchCell } from '#lib/components/table/BatchRowMenu.svelte';
+	import { createEnhanceHandler } from '#lib/client/form-handlers.js';
+	import { applyToRows, createRowSelection, formatIssueLines } from '#lib/shared/table/index.js';
+	import { m } from '#lib/paraglide/messages.js';
 	import BatchCoverField from './BatchCoverField.svelte';
 
 	let { data } = $props();
@@ -31,7 +28,13 @@
 	};
 
 	type BookField =
-		'isbn' | 'status' | 'readStatus' | 'paidPrice' | 'originalPrice' | 'currencyCode' | 'boughtAt';
+		| 'isbn'
+		| 'status'
+		| 'readStatus'
+		| 'paidPrice'
+		| 'originalPrice'
+		| 'currencyCode'
+		| 'boughtAt';
 
 	const statuses = book.bookStatusEnum.options;
 	const readStatuses = book.readStatusEnum.options;
@@ -183,15 +186,15 @@
 		invalidData: m.dialog_book_batch_invalid_data(),
 		error: m.dialog_book_batch_error(),
 		onSuccess: () => {
-			void goto(resolve(`/series/${data.seriesInfo.id}`));
+			void goto(resolve(`series/${data.seriesInfo.id}`));
 		}
 	});
 </script>
 
-<main class="mx-auto max-w-full p-2">
+<main class="container p-2">
 	<div class="mb-2 flex items-center gap-2">
 		<a
-			href={resolve(`/series/${data.seriesInfo.id}`)}
+			href={resolve(`series/${data.seriesInfo.id}`)}
 			class="btn preset-tonal"
 			aria-label={m.common_cancel()}
 			title={m.common_cancel()}
@@ -492,9 +495,10 @@
 				</button>
 
 				<div class="flex items-center gap-2">
-					<a href={resolve(`/series/${data.seriesInfo.id}`)} class="btn preset-tonal">
+					<a href={resolve(`series/${data.seriesInfo.id}`)} class="btn preset-tonal">
 						{m.common_cancel()}
 					</a>
+
 					<button type="submit" class="btn preset-filled" disabled={books.length === 0}>
 						{m.dialog_book_batch_submit()}
 					</button>

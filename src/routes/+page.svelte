@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import BookCard from '$lib/components/dashboard/BookCard.svelte';
-	import { getReading } from '$lib/components/forms/book/getReading.remote';
-	import { markOwned } from '$lib/components/forms/book/markOwned.remote';
-	import { markRead } from '$lib/components/forms/book/markRead.remote';
-	import { updateBookReadStatus } from '$lib/components/forms/book/updateBookReadStatus.remote';
-	import InfoDialog from '$lib/components/InfoDialog.svelte';
-	import { coverSrc } from '$lib/fileUrl';
-	import { m } from '$lib/paraglide/messages';
-	import { createRemoteActionHandler } from '$lib/utils/formUtils';
+	import { refreshAll } from '$app/navigation';
+	import BookCard from '#lib/components/dashboard/BookCard.svelte';
+	import { getReading, markOwned, updateBookReadStatus } from '#lib/remote/books.remote.js';
+	import InfoDialog from '#lib/components/ui/InfoDialog.svelte';
+	import { coverSrc } from '#lib/shared/file-url.js';
+	import { m } from '#lib/paraglide/messages.js';
+	import { createRemoteActionHandler } from '#lib/client/form-handlers.js';
 	import {
 		Book,
 		BookCheck,
@@ -26,12 +23,21 @@
 	import { Carousel, Marquee, Progress } from '@skeletonlabs/skeleton-svelte';
 	import type { PageProps } from './$types';
 	import { MediaQuery } from 'svelte/reactivity';
+	import ReadCalendar from '#lib/components/dashboard/readcalendar/ReadCalendar.svelte';
 
 	let { data }: PageProps = $props();
 
 	const kpiMarquee = $derived([
-		{ label: m.dashboard_kpimarquee_series(), icon: Library, stat: data.kpi.series.count },
-		{ label: m.dashboard_kpimarquee_ownedvolumes(), icon: Book, stat: data.kpi.volumes.countOwned },
+		{
+			label: m.dashboard_kpimarquee_series(),
+			icon: Library,
+			stat: data.kpi.series.count
+		},
+		{
+			label: m.dashboard_kpimarquee_ownedvolumes(),
+			icon: Book,
+			stat: data.kpi.volumes.countOwned
+		},
 		{
 			label: m.dashboard_kpimarquee_readvolumes(),
 			icon: BookCheck,
@@ -47,7 +53,11 @@
 			icon: BookHeart,
 			stat: data.kpi.volumes.countWishlisted
 		},
-		{ label: m.dashboard_kpimarquee_orders(), icon: Package, stat: data.kpi.orders.count }
+		{
+			label: m.dashboard_kpimarquee_orders(),
+			icon: Package,
+			stat: data.kpi.orders.count
+		}
 	]);
 
 	const ownedCount = $derived(data.kpi.volumes.countOwned ?? 0);
@@ -76,7 +86,10 @@
 	type ToReadItem = (typeof data.unread)[number];
 
 	let toReadQuery = $state('');
-	const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+	const collator = new Intl.Collator(undefined, {
+		sensitivity: 'base',
+		numeric: true
+	});
 
 	function compareToRead(a: ToReadItem, b: ToReadItem) {
 		const byTitle = collator.compare(a.series.title, b.series.title);
@@ -110,7 +123,7 @@
 			success: m.dashboard_widget_ordered_success_bookowned(),
 			error: m.dashboard_widget_ordered_error_bookowned(),
 			run: () => markOwned({ id: bookId, status: 'Owned' }),
-			onSuccess: () => invalidateAll()
+			onSuccess: () => refreshAll()
 		})();
 	}
 
@@ -119,14 +132,14 @@
 			...opts,
 			run,
 			onSuccess: async () => {
-				await invalidateAll();
+				await refreshAll();
 				await reading.refresh();
 			}
 		});
 	}
 </script>
 
-<main class="mx-auto max-w-6xl space-y-2 p-2">
+<main class="container space-y-2 p-2">
 	<Marquee autoFill pauseOnInteraction>
 		<Marquee.Edge side="start" />
 		<Marquee.Viewport>
@@ -159,7 +172,10 @@
 		<Progress value={percentage}>
 			<div class="flex items-baseline justify-between gap-2">
 				<Progress.Label class="text-sm text-surface-500">
-					{m.dashboard_widget_readprogress_label({ read: readCount, owned: ownedCount })}
+					{m.dashboard_widget_readprogress_label({
+						read: readCount,
+						owned: ownedCount
+					})}
 				</Progress.Label>
 				<span class="text-lg font-bold tabular-nums">{percentage}%</span>
 			</div>
@@ -169,11 +185,16 @@
 		</Progress>
 	</section>
 
+	<!-- Reading calendar -->
+	<ReadCalendar />
+
 	<!-- Currently reading -->
 	<section class="space-y-2 card preset-filled-surface-100-900 p-2">
 		<div class="flex items-center gap-2">
 			<BookOpen class="size-5" />
-			<h2 class="text-xl font-semibold">{m.dashboard_widget_reading_title()}</h2>
+			<h2 class="text-xl font-semibold">
+				{m.dashboard_widget_reading_title()}
+			</h2>
 		</div>
 		{#await reading then books}
 			{#if books.length > 0}
@@ -200,7 +221,11 @@
 						<Carousel.ItemGroup>
 							{#each books as item, index (item.book.id)}
 								{@const onMarkRead = advanceBook(
-									() => markRead({ id: item.book.id, readStatus: 'Completed' }),
+									() =>
+										updateBookReadStatus({
+											id: item.book.id,
+											readStatus: 'Completed'
+										}),
 									{
 										success: m.dashboard_widget_reading_success_bookcomplted(),
 										error: m.dashboard_widget_reading_error_bookcomplted()
@@ -240,7 +265,9 @@
 					</Carousel.Context>
 				</Carousel>
 			{:else}
-				<p class="text-sm text-surface-500">{m.dashboard_widget_reading_empty()}</p>
+				<p class="text-sm text-surface-500">
+					{m.dashboard_widget_reading_empty()}
+				</p>
 			{/if}
 		{/await}
 	</section>
@@ -249,7 +276,9 @@
 	<section class="space-y-2 card preset-filled-surface-100-900 p-2">
 		<div class="flex items-center gap-2">
 			<ShoppingBag class="size-5" />
-			<h2 class="text-xl font-semibold">{m.dashboard_widget_ordered_title()}</h2>
+			<h2 class="text-xl font-semibold">
+				{m.dashboard_widget_ordered_title()}
+			</h2>
 		</div>
 		{#if data.ordered.length > 0}
 			<Carousel
@@ -322,7 +351,9 @@
 				</Carousel.Context>
 			</Carousel>
 		{:else}
-			<p class="text-sm text-surface-500">{m.dashboard_widget_ordered_empty()}</p>
+			<p class="text-sm text-surface-500">
+				{m.dashboard_widget_ordered_empty()}
+			</p>
 		{/if}
 	</section>
 
@@ -347,9 +378,13 @@
 			</div>
 		{/if}
 		{#if data.unread.length === 0}
-			<p class="text-sm text-surface-500">{m.dashboard_widget_toread_empty()}</p>
+			<p class="text-sm text-surface-500">
+				{m.dashboard_widget_toread_empty()}
+			</p>
 		{:else if toRead.length === 0}
-			<p class="text-sm text-surface-500">{m.dashboard_widget_toread_noresults()}</p>
+			<p class="text-sm text-surface-500">
+				{m.dashboard_widget_toread_noresults()}
+			</p>
 		{:else}
 			<Carousel
 				slideCount={toRead.length}
@@ -374,7 +409,11 @@
 					<Carousel.ItemGroup>
 						{#each toRead as item, index (item.book.id)}
 							{@const onStartReading = advanceBook(
-								() => updateBookReadStatus({ id: item.book.id, readStatus: 'Reading' }),
+								() =>
+									updateBookReadStatus({
+										id: item.book.id,
+										readStatus: 'Reading'
+									}),
 								{
 									success: m.dashboard_widget_toread_success_started(),
 									error: m.dashboard_widget_toread_error_started()

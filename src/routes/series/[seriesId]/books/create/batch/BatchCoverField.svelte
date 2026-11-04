@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Link2, LoaderCircle, Upload, X } from '@lucide/svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages.js';
 
 	type Props = {
 		value?: string;

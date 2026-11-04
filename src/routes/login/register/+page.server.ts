@@ -1,13 +1,13 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { MAX_USERS } from '$app/env/private';
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
-import { auth } from '$lib/server/auth';
-import { getUserCount, isCapReached, parseMaxUsers } from '$lib/server/registration';
+import { auth } from '#lib/server/auth.js';
+import { getUserCount, isCapReached, parseMaxUsers } from '#lib/server/services/registration.js';
 import { APIError } from 'better-auth/api';
 
 function getMaxUsers(): number | null {
-	return parseMaxUsers(env.MAX_USERS);
+	return parseMaxUsers(MAX_USERS);
 }
 
 export const load: PageServerLoad = async (event) => {

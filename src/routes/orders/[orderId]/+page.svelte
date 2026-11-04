@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-	import { createOrderAdjustment } from '$lib/components/forms/orders/createOrderAdjustment.remote';
-	import { createOrderItem } from '$lib/components/forms/orders/createOrderItem.remote';
-	import { deleteOrder } from '$lib/components/forms/orders/deleteOrder.remote';
-	import { deleteOrderAdjustment } from '$lib/components/forms/orders/deleteOrderAdjustment.remote';
-	import { deleteOrderItem } from '$lib/components/forms/orders/deleteOrderItem.remote';
-	import { updateOrderAdjustment } from '$lib/components/forms/orders/updateOrderAdjustment.remote';
-	import UpdateOrderDialog from '$lib/components/forms/orders/UpdateOrderDialog.svelte';
-	import BookCover from '$lib/components/BookCover.svelte';
-	import { coverSrc } from '$lib/fileUrl';
-	import { createEnhanceHandler, createRemoteActionHandler } from '$lib/utils/formUtils';
-	import { m } from '$lib/paraglide/messages';
+	import ConfirmDialog from '#lib/components/ui/ConfirmDialog.svelte';
+	import { createOrderAdjustment } from '#lib/remote/orders.remote.js';
+	import { createOrderItem } from '#lib/remote/orders.remote.js';
+	import { deleteOrder } from '#lib/remote/orders.remote.js';
+	import { deleteOrderAdjustment } from '#lib/remote/orders.remote.js';
+	import { deleteOrderItem } from '#lib/remote/orders.remote.js';
+	import { updateOrderAdjustment } from '#lib/remote/orders.remote.js';
+	import UpdateOrderDialog from '#lib/components/orders/UpdateOrderDialog.svelte';
+	import BookCover from '#lib/components/book/BookCover.svelte';
+	import { coverSrc } from '#lib/shared/file-url.js';
+	import { createEnhanceHandler, createRemoteActionHandler } from '#lib/client/form-handlers.js';
+	import { m } from '#lib/paraglide/messages.js';
 	import {
 		type CreateOrderAdjustment,
 		type CreateOrderItem,
 		type UpdateOrder,
 		type UpdateOrderAdjustment
-	} from '$lib/validation/order';
+	} from '#lib/shared/validation/order.js';
 	import {
 		ArrowLeft,
 		Calendar,
@@ -45,6 +45,7 @@
 	} from '@skeletonlabs/skeleton-svelte';
 	import { format } from 'date-fns';
 	import Fuse from 'fuse.js';
+	import { tick } from 'svelte';
 
 	let { data } = $props();
 
@@ -61,7 +62,7 @@
 		run: () => deleteOrder({ id: order.id }),
 		onSuccess: async () => {
 			confirmDeleteOrderOpen = false;
-			await goto(resolve('/orders'));
+			await goto(resolve('orders'));
 		}
 	});
 
@@ -73,7 +74,7 @@
 		run: () => deleteOrderItem({ id: pendingDeleteItemId ?? '' }),
 		onSuccess: () => {
 			pendingDeleteItemId = null;
-			invalidateAll();
+			refreshAll();
 		}
 	});
 
@@ -98,7 +99,7 @@
 		error: m.dialog_order_editadjustment_error(),
 		onSuccess: () => {
 			editingAdjustmentId = null;
-			invalidateAll();
+			refreshAll();
 		}
 	});
 
@@ -110,21 +111,19 @@
 		run: () => deleteOrderAdjustment({ id: pendingDeleteAdjustmentId ?? '' }),
 		onSuccess: () => {
 			pendingDeleteAdjustmentId = null;
-			invalidateAll();
+			refreshAll();
 		}
 	});
 
 	let addItemOpen = $state(false);
 	let selectedBook = $state<string | undefined>('');
-
+	let addItemForm = $state<HTMLFormElement | undefined>(undefined);
 	let itemsBaseTotal = $derived(
 		order.items.reduce((sum, item) => sum + Number(item.book.originalPrice ?? 0), 0)
 	);
-
 	let itemsPaidTotal = $derived(
 		order.items.reduce((sum, item) => sum + Number(item.book.paidPrice ?? 0), 0)
 	);
-
 	let adjustmentsPaidTotal = $derived(
 		order.adjustments.reduce((sum, item) => sum + Number(item.amount ?? 0), 0)
 	);
@@ -190,9 +189,20 @@
 		invalidData: m.dialog_order_addbook_invalid_data(),
 		error: m.dialog_order_addbook_error(),
 		onSuccess: () => {
-			invalidateAll();
+			selectedBook = undefined;
+			createOrderItem.fields.bookId.set('');
+			refreshAll();
 		}
 	});
+
+	async function handleBookSelect(event: { value: string[]; itemValue: string }) {
+		const bookId = event.itemValue ?? event.value.at(0);
+		if (!bookId) return;
+		selectedBook = bookId;
+		createOrderItem.fields.bookId.set(bookId);
+		await tick();
+		addItemForm?.requestSubmit();
+	}
 
 	let addAdjustmentOpen = $state(false);
 
@@ -213,7 +223,7 @@
 		onSuccess: () => {
 			addAdjustmentOpen = false;
 			resetAdjustmentForm();
-			invalidateAll();
+			refreshAll();
 		}
 	});
 
@@ -224,7 +234,6 @@
 			orderNumber: order.orderNumber ?? '',
 			orderDate: order.orderDate ? format(new Date(order.orderDate), 'yyyy-MM-dd') : '',
 			currencyCode: order.currencyCode ?? '',
-			receiptUrl: order.receiptUrl ?? '',
 			receiptFileId: order.receiptFileId ?? '',
 			note: order.note ?? ''
 		};
@@ -252,7 +261,7 @@
 {#snippet bookItem(item: (typeof data.order.items)[number])}
 	{@const book = item.book}
 	<li class="flex items-center gap-2">
-		<a href={resolve(`/series/${book.seriesId}/${book.id}`)} class="shrink-0">
+		<a href={resolve(`series/${book.seriesId}/${book.id}`)} class="shrink-0">
 			<BookCover
 				src={coverSrc(book)}
 				alt={m.order_orderid_cover_alt({
@@ -264,17 +273,20 @@
 			/>
 		</a>
 		<div class="grid-col-1 grid grid-rows-3">
-			<a href={resolve(`/series/${book.seriesId}/${book.id}`)} class="hover:underline">
+			<a href={resolve(`series/${book.seriesId}/${book.id}`)} class="hover:underline">
 				<p class="truncate">{book.series.title}</p>
 			</a>
+
 			<p class="text-surface-500">
 				{m.order_orderid_entry_volume({ volumeNumber: book.volumeNumber })}
 			</p>
+
 			<p>
 				{#if book.originalPrice && book.originalPrice !== '' && book.originalPrice !== book.paidPrice}
 					<span class="text-success-500">{book.paidPrice ?? '—'}</span>
-					{order.currencyCode} (<span class="text-error-500 line-through">{book.originalPrice}</span
-					>)
+					{order.currencyCode} (
+					<span class="text-error-500 line-through">{book.originalPrice}</span>
+					)
 				{:else}
 					{book.paidPrice ?? '—'} {order.currencyCode}
 				{/if}
@@ -305,9 +317,9 @@
 	</li>
 {/snippet}
 
-<main class="p-2">
-	<div class="mx-auto flex max-w-6xl flex-col gap-2">
-		<a href={resolve('/orders')} class="btn self-start preset-tonal">
+<main class="container p-2">
+	<div class="flex flex-col gap-2">
+		<a href={resolve('orders')} class="btn self-start preset-tonal">
 			<ArrowLeft class="size-4" />
 			{m.orders_title()}
 		</a>
@@ -342,17 +354,7 @@
 					<div class="flex gap-2">
 						{#if order.receiptFileId}
 							<a
-								href={resolve(`/files/${order.receiptFileId}`)}
-								target="_blank"
-								rel="noreferrer"
-								class="btn flex w-full items-center gap-2 preset-filled-primary-500 btn-sm sm:w-fit"
-							>
-								<Receipt class="size-4" />
-								<span>{m.order_orderid_viewreceipt()}</span>
-							</a>
-						{:else if order.receiptUrl}
-							<a
-								href={order.receiptUrl}
+								href={resolve(`files/${order.receiptFileId}`)}
 								target="_blank"
 								rel="noreferrer"
 								class="btn flex w-full items-center gap-2 preset-filled-primary-500 btn-sm sm:w-fit"
@@ -416,16 +418,20 @@
 				</div>
 
 				{#if addItemOpen}
-					<form {...createOrderItem.enhance(handleAddItem)} class="space-y-2">
+					<form
+						bind:this={addItemForm}
+						{...createOrderItem.enhance(handleAddItem)}
+						class="space-y-2"
+					>
 						<input {...createOrderItem.fields.bookId.as('hidden', selectedBook || '')} />
 						<Combobox
 							class="w-full"
 							placeholder={m.common_search_placeholder()}
 							collection={booksCollection}
 							onInputValueChange={booksFilter}
-							onSelect={(e) => {
-								selectedBook = e.value.at(0);
-							}}
+							onSelect={handleBookSelect}
+							openOnClick={true}
+							closeOnSelect={false}
 						>
 							<Combobox.Control>
 								<Combobox.Input />
@@ -440,9 +446,6 @@
 								>
 									{m.common_clear_all()}
 								</Combobox.ClearTrigger>
-								<button type="submit" class="btn w-full preset-filled sm:flex-1">
-									{m.dialog_order_addbook_submit()}
-								</button>
 							</div>
 							<Portal>
 								<Combobox.Positioner>
@@ -491,9 +494,9 @@
 					<h3 class="text-xl font-bold">
 						{#if itemsBaseTotal !== itemsPaidTotal}
 							<span class="text-success-500">{itemsPaidTotal}</span>
-							{order.currencyCode} (<span class="text-error-500 line-through"
-								>{itemsBaseTotal.toFixed(2)}</span
-							>)
+							{order.currencyCode} (
+							<span class="text-error-500 line-through">{itemsBaseTotal.toFixed(2)}</span>
+							)
 						{:else}
 							{itemsPaidTotal.toFixed(2)} {order.currencyCode}
 						{/if}
@@ -575,9 +578,11 @@
 											{...updateOrderAdjustment.fields.amount.as('text')}
 											placeholder={m.form_orderadjustment_amount_placeholder()}
 										/>
+
 										<button type="submit" class="btn w-full preset-filled-primary-500 btn-sm">
 											<Check />
 										</button>
+
 										<button
 											type="button"
 											class="btn w-full preset-tonal btn-sm"

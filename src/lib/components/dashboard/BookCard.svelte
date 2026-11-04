@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ArrowUpRight, type LucideIcon } from '@lucide/svelte';
-	import BookCover from '$lib/components/BookCover.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import BookCover from '#lib/components/book/BookCover.svelte';
+	import { m } from '#lib/paraglide/messages.js';
 
 	type Props = {
 		seriesId: string;
@@ -32,7 +32,7 @@
 		primaryAction
 	}: Props = $props();
 
-	const href = $derived(resolve(`/series/${seriesId}/${bookId}`));
+	const href = $derived(resolve(`series/${seriesId}/${bookId}`));
 </script>
 
 <article class="mx-auto flex h-full w-full min-w-48 gap-2 card preset-filled-surface-50-950 p-2">
@@ -47,12 +47,8 @@
 	</a>
 	<div class="flex min-w-0 flex-col gap-2">
 		<div class="min-w-0">
-			<a {href} class="hover:underline">
-				<p class="truncate font-medium">{title}</p>
-			</a>
-			<p class="text-sm text-surface-500">
-				{m.dashboard_widget_reading_volume({ volumeNumber })}
-			</p>
+			<a {href} class="hover:underline"><p class="truncate font-medium">{title}</p></a>
+			<p class="text-sm text-surface-500">{m.dashboard_widget_reading_volume({ volumeNumber })}</p>
 		</div>
 		<div class="mt-auto flex w-fit gap-2">
 			{#if primaryAction}
@@ -67,6 +63,7 @@
 					<PrimaryIcon class="size-4" />
 				</button>
 			{/if}
+
 			<a {href} class="btn preset-filled-primary-500 p-2" title={openLabel} aria-label={openLabel}>
 				<ArrowUpRight class="size-4" />
 			</a>

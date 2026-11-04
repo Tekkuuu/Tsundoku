@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
-	import { m } from '$lib/paraglide/messages';
-	import TotalSpend from '$lib/components/stats/finance/TotalSpend.svelte';
-	import MonthlySpend from '$lib/components/stats/finance/MonthlySpend.svelte';
+	import { m } from '#lib/paraglide/messages.js';
+	import TotalSpend from '#lib/components/stats/finance/TotalSpend.svelte';
+	import MonthlySpend from '#lib/components/stats/finance/MonthlySpend.svelte';
 </script>
 
-<main class="mx-auto max-w-6xl min-w-0 p-3 sm:p-4">
+<main class="container min-w-0 p-3 sm:p-4">
 	<div class="grid w-full gap-4">
 		<header>
 			<h1 class="text-2xl font-bold">{m.stats_title()}</h1>

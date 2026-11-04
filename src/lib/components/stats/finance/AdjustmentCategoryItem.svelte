@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Accordion } from '@skeletonlabs/skeleton-svelte';
 	import { ChevronDown } from '@lucide/svelte';
-	import { m } from '$lib/paraglide/messages';
-	import type { AdjustmentCategory } from './totalSpend.remote';
+	import { m } from '#lib/paraglide/messages.js';
+	import type { AdjustmentCategory } from '#lib/remote/stats.remote.js';
 
 	interface Props {
 		category: AdjustmentCategory;
@@ -29,8 +29,10 @@
 			<span class="truncate text-surface-600-400">{category.name}</span>
 			<span
 				class="badge preset-filled-primary-500"
-				aria-label={`${category.count} ${m.stats_finance_entries()}`}>{category.count}</span
+				aria-label={`${category.count} ${m.stats_finance_entries()}`}
 			>
+				{category.count}
+			</span>
 		</span>
 		<span class="shrink-0 text-right font-medium {valueColor}">
 			<span>{formatter.format(category.total)}</span>

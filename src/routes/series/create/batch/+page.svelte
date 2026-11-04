@@ -2,14 +2,15 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { ChevronLeft, Plus, Trash2 } from '@lucide/svelte';
-	import { series as seriesValidation } from '$lib/validation';
-	import type { CreateSeriesBatch } from '$lib/validation/series';
-	import { createSeriesBatch, getSeriesStatusText } from '$lib/components/forms/series';
-	import BatchBulkMenu, { type BulkTarget } from '$lib/components/BatchBulkMenu.svelte';
-	import BatchRowMenu, { type BatchCell } from '$lib/components/BatchRowMenu.svelte';
-	import { createEnhanceHandler } from '$lib/utils/formUtils';
-	import { applyToRows, createRowSelection, formatIssueLines } from '$lib/utils/table';
-	import { m } from '$lib/paraglide/messages';
+	import { series as seriesValidation } from '#lib/shared/validation/index.js';
+	import type { CreateSeriesBatch } from '#lib/shared/validation/series.js';
+	import { createSeriesBatch } from '#lib/remote/series.remote.js';
+	import { getSeriesStatusText } from '#lib/components/series/series-labels.js';
+	import BatchBulkMenu, { type BulkTarget } from '#lib/components/table/BatchBulkMenu.svelte';
+	import BatchRowMenu, { type BatchCell } from '#lib/components/table/BatchRowMenu.svelte';
+	import { createEnhanceHandler } from '#lib/client/form-handlers.js';
+	import { applyToRows, createRowSelection, formatIssueLines } from '#lib/shared/table/index.js';
+	import { m } from '#lib/paraglide/messages.js';
 
 	type SeriesRow = {
 		title?: string;
@@ -112,15 +113,15 @@
 		invalidData: m.dialog_series_batch_invalid_data(),
 		error: m.dialog_series_batch_error(),
 		onSuccess: () => {
-			void goto(resolve('/series'));
+			void goto(resolve('series'));
 		}
 	});
 </script>
 
-<main class="mx-auto max-w-full p-2">
+<main class="container flex flex-col p-2">
 	<div class="mb-2 flex items-center gap-2">
 		<a
-			href={resolve('/series')}
+			href={resolve('series')}
 			class="btn preset-tonal"
 			aria-label={m.common_cancel()}
 			title={m.common_cancel()}
@@ -132,7 +133,7 @@
 		</div>
 	</div>
 
-	<div class="">
+	<div class="w-full">
 		<form
 			{...createSeriesBatch.enhance(handleEnhance)}
 			class="card preset-filled-surface-100-900 p-2"
@@ -298,9 +299,7 @@
 				</button>
 
 				<div class="flex items-center gap-2">
-					<a href={resolve('/series')} class="btn preset-tonal">
-						{m.common_cancel()}
-					</a>
+					<a href={resolve('series')} class="btn preset-tonal">{m.common_cancel()}</a>
 					<button type="submit" class="btn preset-filled" disabled={rows.length === 0}>
 						{m.dialog_series_batch_submit()}
 					</button>

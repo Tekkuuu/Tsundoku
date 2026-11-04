@@ -4,15 +4,16 @@
 	import { goto } from '$app/navigation';
 	import { ChevronLeft, ChevronRight, Lock } from '@lucide/svelte';
 	import { Portal, Steps, Tooltip } from '@skeletonlabs/skeleton-svelte';
-	import { book as bookValidation } from '$lib/validation';
-	import type { BookStatus, UpdateBook } from '$lib/validation/book';
-	import { formatBoughtAtMonth } from '$lib/validation/book';
-	import { updateBook, getBookStatusText, getReadStatusText } from '$lib/components/forms/book';
-	import { createEnhanceHandler } from '$lib/utils/formUtils';
-	import { m } from '$lib/paraglide/messages';
-	import MonthInput from '$lib/components/MonthInput.svelte';
-	import CurrencyCodeInput from '$lib/components/CurrencyCodeInput.svelte';
-	import FileAttachment from '$lib/components/forms/FileAttachment.svelte';
+	import { book as bookValidation } from '#lib/shared/validation/index.js';
+	import type { BookStatus, UpdateBook } from '#lib/shared/validation/book.js';
+	import { formatBoughtAtMonth } from '#lib/shared/validation/book.js';
+	import { updateBook } from '#lib/remote/books.remote.js';
+	import { getBookStatusText, getReadStatusText } from '#lib/components/book/book-labels.js';
+	import { createEnhanceHandler } from '#lib/client/form-handlers.js';
+	import { m } from '#lib/paraglide/messages.js';
+	import MonthInput from '#lib/components/form/MonthInput.svelte';
+	import CurrencyCodeInput from '#lib/components/form/CurrencyCodeInput.svelte';
+	import FileAttachment from '#lib/components/form/FileAttachment.svelte';
 
 	let { data } = $props();
 
@@ -33,7 +34,10 @@
 			currencyCode: data.bookInfo.currencyCode ?? '',
 			paidPrice: data.bookInfo.paidPrice ?? '',
 			originalPrice: data.bookInfo.originalPrice ?? '',
-			boughtAt: formatBoughtAtMonth(data.bookInfo.boughtAt) ?? ''
+			boughtAt: formatBoughtAtMonth(data.bookInfo.boughtAt) ?? '',
+			startedAt: data.bookInfo.startedAt ?? '',
+			completedAt: data.bookInfo.completedAt ?? '',
+			readCount: data.bookInfo.readCount
 		});
 	});
 
@@ -70,6 +74,9 @@
 		isbn: 0,
 		status: 0,
 		readStatus: 0,
+		startedAt: 0,
+		completedAt: 0,
+		readCount: 0,
 		coverFileId: 1,
 		paidPrice: 2,
 		originalPrice: 2,
@@ -90,15 +97,15 @@
 			}
 		},
 		onSuccess: () => {
-			void goto(resolve(`/series/${data.seriesInfo.id}/${data.bookInfo.id}`));
+			void goto(resolve(`series/${data.seriesInfo.id}/${data.bookInfo.id}`));
 		}
 	});
 </script>
 
-<main class="mx-auto max-w-4xl p-4">
+<main class="container p-4">
 	<div class="mb-4 flex items-center gap-3">
 		<a
-			href={resolve(`/series/${data.seriesInfo.id}/${data.bookInfo.id}`)}
+			href={resolve(`series/${data.seriesInfo.id}/${data.bookInfo.id}`)}
 			class="btn preset-tonal btn-sm"
 			aria-label={m.common_cancel()}
 			title={m.common_cancel()}
@@ -110,6 +117,7 @@
 
 	<form {...updateBook.enhance(handleEnhance)} class="card preset-filled-surface-100-900 p-4">
 		<input {...updateBook.fields.id.as('hidden', data.bookInfo.id)} />
+
 		<input {...updateBook.fields.seriesId.as('hidden', data.seriesInfo.id)} />
 
 		<Steps {step} onStepChange={(details) => (step = details.step)} count={3} class="w-full">
@@ -165,7 +173,7 @@
 					<label class="label">
 						<span class="label-text">{m.form_book_cu_status_label()}</span>
 						<select
-							class="select leading-6"
+							class="select"
 							{...updateBook.fields.status.as('select')}
 							onchange={(e) => (selectedStatus = e.currentTarget.value as BookStatus)}
 						>
@@ -180,14 +188,45 @@
 
 					<label class="label">
 						<span class="label-text">{m.form_book_cu_readstatus_label()}</span>
-						<select class="select leading-6" {...updateBook.fields.readStatus.as('select')}>
+						<select class="select" {...updateBook.fields.readStatus.as('select')}>
 							{#each bookValidation.readStatusEnum.options as opt (opt)}
-								<option value={opt} disabled={selectedStatus !== 'Owned' && opt !== 'Not Read'}
-									>{getReadStatusText(opt)}</option
-								>
+								<option value={opt} disabled={selectedStatus !== 'Owned' && opt !== 'Not Read'}>
+									{getReadStatusText(opt)}
+								</option>
 							{/each}
 						</select>
 						{#each updateBook.fields.readStatus.issues() ?? [] as issue (issue.message)}
+							<p class="text-sm text-error-500">{issue.message}</p>
+						{/each}
+					</label>
+				</div>
+
+				<h2 class="mt-4 mb-2 font-semibold">{m.book_progress_section_title()}</h2>
+				<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+					<label class="label">
+						<span class="label-text">{m.form_book_cu_startedat_label()}</span>
+						<input class="input" {...updateBook.fields.startedAt.as('date')} />
+						{#each updateBook.fields.startedAt.issues() ?? [] as issue (issue.message)}
+							<p class="text-sm text-error-500">{issue.message}</p>
+						{/each}
+					</label>
+
+					<label class="label">
+						<span class="label-text">{m.form_book_cu_completedat_label()}</span>
+						<input class="input" {...updateBook.fields.completedAt.as('date')} />
+						{#each updateBook.fields.completedAt.issues() ?? [] as issue (issue.message)}
+							<p class="text-sm text-error-500">{issue.message}</p>
+						{/each}
+					</label>
+
+					<label class="label">
+						<span class="label-text">{m.form_book_cu_readcount_label()}</span>
+						<input
+							class="input"
+							{...updateBook.fields.readCount.as('number')}
+							placeholder={m.form_book_cu_readcount_placeholder()}
+						/>
+						{#each updateBook.fields.readCount.issues() ?? [] as issue (issue.message)}
 							<p class="text-sm text-error-500">{issue.message}</p>
 						{/each}
 					</label>
@@ -331,6 +370,18 @@
 						<div>
 							<dt class="text-sm text-surface-500">{m.form_book_cu_boughtat_label()}</dt>
 							<dd class="font-medium">{boughtAtValue || '—'}</dd>
+						</div>
+						<div>
+							<dt class="text-sm text-surface-500">{m.form_book_cu_startedat_label()}</dt>
+							<dd class="font-medium">{updateBook.fields.startedAt.value() || '—'}</dd>
+						</div>
+						<div>
+							<dt class="text-sm text-surface-500">{m.form_book_cu_completedat_label()}</dt>
+							<dd class="font-medium">{updateBook.fields.completedAt.value() || '—'}</dd>
+						</div>
+						<div>
+							<dt class="text-sm text-surface-500">{m.form_book_cu_readcount_label()}</dt>
+							<dd class="font-medium">{updateBook.fields.readCount.value() ?? '—'}</dd>
 						</div>
 						<div>
 							<dt class="text-sm text-surface-500">{m.form_book_cu_paid_label()}</dt>

@@ -2,8 +2,8 @@
 /**
  * Plain-SQL backup of the database to ./backups/
  *
- *   pnpm db:backup
- *   pnpm db:backup backups/custom-name.sql
+ *   vp run db:backup
+ *   vp run db:backup backups/custom-name.sql
  *
  * Credentials come from DATABASE_URL (.env).
  */

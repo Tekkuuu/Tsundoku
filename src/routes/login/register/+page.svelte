@@ -1,24 +1,25 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages.js';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let pending = $state(false);
 </script>
 
-<main class="mx-auto flex min-h-screen w-full max-w-xl items-center justify-center">
-	<div class="flex w-full flex-col gap-4 card preset-filled-surface-100-900 p-4">
+<main class="container flex min-h-screen items-center justify-center">
+	<div class="flex w-full max-w-xl flex-col gap-4 card preset-filled-surface-100-900 p-4">
 		<h1 class="text-center text-5xl font-bold">{m.register_title()}</h1>
 		<hr class="hr" />
 		{#if data.registrationClosed}
 			<p role="alert" class="card preset-filled-error-500 p-2 text-center font-semibold">
 				{m.register_closed()}
 			</p>
-			<a href={resolve('/login')} class="btn w-full preset-filled-secondary-500 font-bold"
-				>{m.register_login_link()}</a
-			>
+
+			<a href={resolve('login')} class="btn w-full preset-filled-secondary-500 font-bold">
+				{m.register_login_link()}
+			</a>
 		{:else}
 			{#if form?.message}
 				<p role="alert" class="card preset-filled-error-500 px-4 py-2 text-center font-semibold">
@@ -89,12 +90,14 @@
 						/>
 					</label>
 				</fieldset>
+
 				<button class="btn w-full preset-filled-primary-500 font-bold" disabled={pending}>
 					{pending ? m.register_submit_pending() : m.register_submit()}
 				</button>
-				<a href={resolve('/login')} class="btn w-full preset-filled-secondary-500 font-bold"
-					>{m.register_login_link()}</a
-				>
+
+				<a href={resolve('login')} class="btn w-full preset-filled-secondary-500 font-bold">
+					{m.register_login_link()}
+				</a>
 			</form>
 		{/if}
 	</div>

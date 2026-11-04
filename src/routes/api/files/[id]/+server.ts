@@ -1,8 +1,8 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
-import { book, order } from '$lib/server/db/schema';
-import { deleteOwnedFile } from '$lib/server/files';
+import { db } from '#lib/server/db/index.js';
+import { book, order } from '#lib/server/db/schema.js';
+import { deleteOwnedFile } from '#lib/server/services/files.js';
 import { and, eq } from 'drizzle-orm';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -29,10 +29,10 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 				.where(and(eq(order.receiptFileId, params.id), eq(order.userId, locals.user.id)))
 				.limit(1);
 	if (usedByBook || usedByOrder) {
-		return json({ message: 'File is in use and cannot be discarded' }, { status: 409 });
+		return Response.json({ message: 'File is in use and cannot be discarded' }, { status: 409 });
 	}
 
 	const deleted = await deleteOwnedFile(db, params.id, locals.user.id);
 	if (!deleted) error(404, 'File not found');
-	return json({ ok: true });
+	return Response.json({ ok: true });
 };

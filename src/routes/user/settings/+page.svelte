@@ -1,14 +1,14 @@
 <script lang="ts">
-	import LocaleSwitcher from '$lib/components/LocaleSwitcher.svelte';
+	import LocaleSwitcher from '#lib/components/ui/LocaleSwitcher.svelte';
 	import { Settings } from '@lucide/svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages.js';
 </script>
 
 <svelte:head>
 	<title>{m.settings_title()}</title>
 </svelte:head>
 
-<main class="p-4">
+<main class="container p-4">
 	<div class="mx-auto max-w-2xl space-y-4">
 		<div class="flex items-center gap-2">
 			<Settings class="size-6" />

@@ -1,9 +1,9 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { db } from '$lib/server/db';
-import { book, orderItem, series } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { book, orderItem, series } from '#lib/server/db/schema.js';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
-import { logger } from '$lib/server/logger';
+import { logger } from '#lib/server/logger.js';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {

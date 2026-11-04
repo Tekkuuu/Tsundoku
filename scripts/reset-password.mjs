@@ -5,13 +5,13 @@
  * The app has no self-service "forgot password" flow (homelab, no mail
  * configured), so recovery happens here with server/DB access:
  *
- *   npm run user:reset-password -- user@example.com
- *   npm run user:reset-password -- user@example.com "new-password-here"
+ *   vp run user:reset-password user@example.com
+ *   vp run user:reset-password user@example.com "new-password-here"
  *
  * Omitting the password prompts for it with hidden input (preferred: keeps it
  * out of shell history). All existing sessions are revoked, forcing re-login.
  *
- * Requires DATABASE_URL (loaded from .env by the npm script).
+ * Requires DATABASE_URL (loaded from .env by the package script).
  */
 import readline from 'node:readline';
 import { Writable } from 'node:stream';
@@ -46,7 +46,7 @@ const args = process.argv.slice(2);
 if (args[0] === '--') args.shift();
 const email = args[0];
 if (!email) {
-	console.error('usage: npm run user:reset-password -- <email> [new-password]');
+	console.error('usage: vp run user:reset-password <email> [new-password]');
 	process.exit(1);
 }
 

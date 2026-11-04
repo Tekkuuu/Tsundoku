@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { House, RotateCcw, TriangleAlert } from '@lucide/svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages.js';
 </script>
 
-<main class="mx-auto max-w-2xl min-w-0 p-3 sm:p-4">
-	<section class="space-y-3 card preset-filled-surface-100-900 p-6 text-center">
+<main class="container min-w-0 p-3 sm:p-4">
+	<section class="mx-auto max-w-2xl space-y-3 card preset-filled-surface-100-900 p-6 text-center">
 		<div class="flex justify-center">
 			<TriangleAlert class="size-10 text-warning-500" />
 		</div>
@@ -23,7 +23,7 @@
 			<button
 				type="button"
 				class="btn preset-filled-primary-500 btn-sm"
-				onclick={() => invalidateAll()}
+				onclick={() => refreshAll()}
 			>
 				<RotateCcw class="size-4" />
 				{m.error_retry()}

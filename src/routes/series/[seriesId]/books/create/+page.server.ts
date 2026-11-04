@@ -1,9 +1,9 @@
-import { db } from '$lib/server/db';
-import { series } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { series } from '#lib/server/db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { logger } from '$lib/server/logger';
+import { logger } from '#lib/server/logger.js';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			{ userId: locals.user.id, seriesId: params.seriesId },
 			'Series not found for book creation'
 		);
-		error(404, { message: 'Series not found' });
+		error(404, 'Series not found');
 	}
 
 	return { seriesInfo };

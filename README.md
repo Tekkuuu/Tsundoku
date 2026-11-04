@@ -9,40 +9,47 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 ### 📖 Series collection
 
 - Create, edit, and delete series
+- Batch-add multiple series at once
+- Series status: `Ongoing` / `Completed` / `Hiatus` / `Cancelled`
 - Fuzzy search with field filters, e.g. `title:naruto author:kishimoto -boruto`
-- Series overview
+- Grid / list views
 
 ### 📦 Volume tracking
 
 - Per-volume shelf status: `Wishlist` / `Ordered` / `Owned`
 - Per-volume reading progress: `Not Read` / `Reading` / `Completed`
-- Store volume metadata with cover image
-- Purchase info per volume
+- Reading dates (started / finished) and read count
+- Batch-add multiple volumes at once
+- Store volume metadata with cover image (upload or import from URL)
+- Purchase info and purchase month
 - Grid / list views
 
 ### 🧾 Orders
 
 - Orders with store name, order number, order date, currency, receipt and notes
+- Add volumes to orders and edit their prices
 - Automatic order total / subtotal calculation based on added items and adjustments
 - Order adjustments: e.g. shipping, fees, discounts
-- Filter orders by `order/store/title/author/volume/paidPrice/originalPrice/date/note`
+- Search and filter by `order/store/title/author/volume/paidPrice/originalPrice/date/note`, with numeric/date operators and exclusions
 
 ### 💰 Finances & stats
 
-- Total spend per currency: books cost, fees, discounts, amount saved and total paid
-- Monthly spending chart with average books / fees / savings
+- Total spend per currency: volumes cost, fees, discounts, amount saved and total paid
+- Monthly spending chart with averages and a month-by-month breakdown
 - Custom / this-year / all-time ranges
 - "Undated books" helper page lists volumes with no order and no purchase month
 
 ### 🏠 Dashboard
 
-- Reading-progress donut
-- `Currently Reading` widget (with "mark as read" button per volume)
-- `Ordered` widget (with "mark as owned" button per volume)
+- KPI marquee: series, owned / read / ordered / wishlisted volumes and orders
+- Reading-progress overview
+- Reading calendar (month / year) with finished volumes and scheduled reads
+- `Currently Reading`, `Ordered`, and `To read` carousels with quick actions
+- Searchable unread backlog
 
 ### 🔒 Auth & self-hosting friendly
 
-- Email + password auth via [Better Auth](https://www.better-auth.com/)
+- Email + password auth with usernames via [Better Auth](https://www.better-auth.com/)
 - `MAX_USERS` registration gate: `1` = single-user (default), `0` = closed registration, empty = unlimited
 - Password resets done via console script (see below)
 - English + Polish UI with in-app language switcher (Help in translating this app into other languages is welcomed and appreciated!)
@@ -60,7 +67,8 @@ See `messages/en.json` for reference
 
 ## Tech stack
 
-- [SvelteKit 2](https://svelte.dev/) + Svelte 5 + `@sveltejs/adapter-node`
+- [SvelteKit 3](https://svelte.dev/) + Svelte 5 + `@sveltejs/adapter-node`
+- [Vite+](https://viteplus.dev/) — unified toolchain for dev, build, test, lint, and format
 - [Tailwind CSS 4](https://tailwindcss.com/) + [Skeleton UI](https://www.skeleton.dev/) + [Lucide](https://lucide.dev/) icons
 - [Drizzle ORM](https://orm.drizzle.team/) + [postgres.js](https://github.com/porsager/postgres) + PostgreSQL
 - [Better Auth](https://www.better-auth.com/)
@@ -72,7 +80,7 @@ See `messages/en.json` for reference
 
 ### Prerequisites
 
-- Node.js 20+ and `pnpm`
+- [Vite+](https://viteplus.dev/) (`vp`) — manages Node.js and pnpm for the project. See the [Vite+ guide](https://viteplus.dev/guide/) for installation instructions.
 - Docker + Docker Compose, **or** an existing PostgreSQL database
 
 ### Configure
@@ -98,10 +106,10 @@ cp .env.example .env
 # start Postgres in the background
 docker compose up -d
 
-# install deps, push schema, run dev server
-pnpm install
-pnpm db:push
-pnpm dev
+# install deps, apply migrations, run dev server
+vp install
+vp run db:migrate
+vp dev
 ```
 
 Open http://localhost:5173, register your first user, done.
@@ -113,9 +121,9 @@ Just point `DATABASE_URL` at it:
 ```sh
 cp .env.example .env
 # edit DATABASE_URL, BETTER_AUTH_SECRET, ORIGIN
-pnpm install
-pnpm db:migrate   # or pnpm db:push
-pnpm build
+vp install
+vp run db:migrate
+vp build
 node build
 ```
 
@@ -128,29 +136,27 @@ Just remove the database service from docker compose if you want to use existing
 
 ## Scripts
 
-| Command                                | Description                                                   |
-| -------------------------------------- | ------------------------------------------------------------- |
-| `pnpm dev`                             | Start dev server                                              |
-| `pnpm build` / `pnpm preview`          | Build / preview production bundle (`adapter-node` → `build/`) |
-| `pnpm check`                           | `svelte-kit sync` + `svelte-check`                            |
-| `pnpm lint` / `pnpm format`            | Prettier + ESLint check / write                               |
-| `pnpm test`                            | Run `vitest` unit tests                                       |
-| `pnpm db:start`                        | `docker compose up` (Postgres)                                |
-| `pnpm db:push`                         | Push Drizzle schema directly (dev)                            |
-| `pnpm db:generate` / `pnpm db:migrate` | Generate / apply SQL migrations (`drizzle/`)                  |
-| `pnpm db:studio`                       | Open Drizzle Studio                                           |
-| `pnpm db:backup`                       | Plain-SQL dump of the database into `backups/` (see below)    |
-| `pnpm files:prune`                     | Delete staged-but-never-linked uploads older than 24h         |
-| `pnpm user:reset-password`             | Reset a user's password server-side (no email service needed) |
+| Command                                    | Description                                                       |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| `vp dev`                                   | Start dev server                                                  |
+| `vp build` / `vp preview`                  | Build / preview production bundle (`adapter-node` → `build/`)     |
+| `vp check`                                 | Format, lint, and type-check (`vp check --fix` writes fixes)      |
+| `vp fmt` / `vp lint`                       | Format / lint only                                                |
+| `vp test`                                  | Run Vitest unit tests                                             |
+| `vp run db:start`                          | `docker compose up` (Postgres)                                    |
+| `vp run db:push`                           | Push Drizzle schema directly (dev; use migrations for a fresh DB) |
+| `vp run db:generate` / `vp run db:migrate` | Generate / apply SQL migrations (`drizzle/`)                      |
+| `vp run db:studio`                         | Open Drizzle Studio                                               |
+| `vp run db:backup`                         | Plain-SQL dump of the database into `backups/` (see below)        |
+| `vp run files:prune`                       | Delete staged-but-never-linked uploads older than 24h             |
+| `vp run user:reset-password <email>`       | Reset a user's password server-side (no email service needed)     |
 
 ## Password reset
 
 No email service is configured, so there is no self-service "forgot password" flow. With server access, reset any account directly:
 
 ```sh
-npm run user:reset-password -- user@example.com
-# with pnpm, drop the `--` (pnpm forwards it as an argument):
-pnpm run user:reset-password user@example.com
+vp run user:reset-password user@example.com
 ```
 
 Omit the password to be prompted with hidden input (keeps it out of shell history). The script hashes with Better Auth's own script setup, updates the credential account, and revokes all of the user's sessions. Needs `DATABASE_URL` (loaded from `.env`).
@@ -160,7 +166,7 @@ Omit the password to be prompted with hidden input (keeps it out of shell histor
 **Back up before every upgrade** — you own the data! There is no automatic backup unless you do it yourself!. Back up **both** the database and the uploaded files (`DATA_DIR` — covers, receipts):
 
 ```sh
-pnpm db:backup
+vp run db:backup
 # backups/<database>-<timestamp>.sql
 tar -czf backups/files-<timestamp>.tar.gz ./data
 ```
@@ -188,10 +194,10 @@ Anyone with a copy of these backups can read everything in them, so keep them en
 To upgrade a deployed instance:
 
 ```sh
-pnpm db:backup
+vp run db:backup
 git pull
-pnpm install
-pnpm db:migrate
+vp install
+vp run db:migrate
 ```
 
 **or**, using the production docker compose:

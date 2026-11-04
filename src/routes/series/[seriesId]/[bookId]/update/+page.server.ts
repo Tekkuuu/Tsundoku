@@ -1,9 +1,9 @@
-import { db } from '$lib/server/db';
-import { series, book, order, orderItem } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { series, book, order, orderItem } from '#lib/server/db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { logger } from '$lib/server/logger';
+import { logger } from '#lib/server/logger.js';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			{ userId: locals.user.id, seriesId: params.seriesId },
 			'Series not found for book update'
 		);
-		error(404, { message: 'Series not found' });
+		error(404, 'Series not found');
 	}
 
 	const bookInfo = (
@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			{ userId: locals.user.id, seriesId: params.seriesId, bookId: params.bookId },
 			'Book not found for update'
 		);
-		error(404, { message: 'Book not found' });
+		error(404, 'Book not found');
 	}
 
 	// One book can be in at most one order: needed to lock the currency field.

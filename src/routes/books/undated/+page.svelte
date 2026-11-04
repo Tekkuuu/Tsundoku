@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ArrowLeft, CalendarX, Search } from '@lucide/svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { createCurrencyFormatter } from '$lib/utils/money';
+	import { m } from '#lib/paraglide/messages.js';
+	import { createCurrencyFormatter } from '#lib/shared/money.js';
 	import UndatedBookRow from './UndatedBookRow.svelte';
 
 	let { data } = $props();
@@ -61,14 +61,15 @@
 	});
 </script>
 
-<main class="mx-auto max-w-6xl min-w-0 p-3 sm:p-4">
+<main class="container min-w-0 p-3 sm:p-4">
 	<div class="grid w-full gap-4">
 		<header class="flex flex-wrap items-center justify-between gap-2">
 			<div class="flex min-w-0 items-center gap-2">
 				<CalendarX class="size-5 shrink-0" />
 				<h1 class="truncate text-2xl font-bold">{m.books_undated_title()}</h1>
 			</div>
-			<a href={resolve('/stats')} class="btn preset-tonal btn-sm">
+
+			<a href={resolve('stats')} class="btn preset-tonal btn-sm">
 				<ArrowLeft class="size-4" />
 				{m.books_undated_back()}
 			</a>
@@ -98,6 +99,7 @@
 					>
 						{m.books_undated_all()}
 					</button>
+
 					{#each currencies as currency (currency)}
 						<button
 							type="button"

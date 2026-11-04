@@ -1,21 +1,16 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-
 	"toast_title_success": "Success",
 	"toast_title_invalid_data": "Invalid data",
 	"toast_title_error": "Error",
 	"toast_description_invalid_data": "The form is not valid.",
 	"toast_description_error": "Something went wrong.",
-
 	"dashboard_error_occurred": "An error occurred",
-
 	"error_title": "Something went wrong",
 	"error_description": "This page could not be loaded. Try again or go back home.",
 	"error_retry": "Try again",
 	"error_home": "Go home",
-
 	"dashboard_widget_readprogress": "Reading progress",
-
 	"dashboard_widget_reading_title": "Currently Reading",
 	"dashboard_widget_reading_empty": "No volumes currently being read.",
 	"dashboard_widget_reading_nocover": "No cover",
@@ -24,7 +19,6 @@
 	"dashboard_widget_reading_openbook": "Open volume",
 	"dashboard_widget_reading_success_bookcomplted": "Marked as completed",
 	"dashboard_widget_reading_error_bookcomplted": "Failed to mark as completed",
-
 	"dashboard_widget_ordered_title": "Ordered",
 	"dashboard_widget_ordered_empty": "No ordered volumes awaiting delivery.",
 	"dashboard_widget_ordered_markowned": "Mark as owned",
@@ -33,18 +27,14 @@
 	"dashboard_widget_ordered_incomplete_title": "Incomplete purchase details",
 	"dashboard_widget_ordered_incomplete_message": "This volume has no order and is missing its purchase date or paid price. Marking it as owned will leave incomplete information in your statistics.",
 	"dashboard_widget_ordered_incomplete_confirm": "OK",
-
 	"dashboard_cover_alt": "Cover for {title}",
-
 	"dashboard_kpimarquee_series": "Series",
 	"dashboard_kpimarquee_ownedvolumes": "Owned volumes",
 	"dashboard_kpimarquee_readvolumes": "Read volumes",
 	"dashboard_kpimarquee_orderedvolumes": "Ordered volumes",
 	"dashboard_kpimarquee_wishlistedvolumes": "Wishlisted volumes",
 	"dashboard_kpimarquee_orders": "Orders",
-
 	"dashboard_widget_readprogress_label": "{read} / {owned} volumes",
-
 	"dashboard_widget_toread_title": "To read",
 	"dashboard_widget_toread_empty": "Your backlog is empty — nothing unread. Nice!",
 	"dashboard_widget_toread_noresults": "No volumes match your search.",
@@ -58,9 +48,38 @@
 	"dashboard_widget_toread_startreading": "Start reading",
 	"dashboard_widget_toread_success_started": "Started reading",
 	"dashboard_widget_toread_error_started": "Failed to start reading",
-
 	"dashboard_widget_carousel_page": "Page {page} of {totalPages}",
-
+	"dashboard_calendar_title": "Reading calendar",
+	"dashboard_calendar_view_switch": "Calendar view",
+	"dashboard_calendar_view_month": "Month",
+	"dashboard_calendar_view_year": "Year",
+	"dashboard_calendar_today": "Today",
+	"dashboard_calendar_previous_month": "Previous month",
+	"dashboard_calendar_next_month": "Next month",
+	"dashboard_calendar_previous_year": "Previous year",
+	"dashboard_calendar_next_year": "Next year",
+	"dashboard_calendar_select_day": "Select {date}",
+	"dashboard_calendar_day_with_reads": "{date}: {reads}",
+	"dashboard_calendar_empty_day": "Nothing finished or scheduled.",
+	"dashboard_calendar_close_day": "Close day details",
+	"dashboard_calendar_completed": "Finished",
+	"dashboard_calendar_planned": "Planned",
+	"dashboard_calendar_read_entry": "{title} · Vol. {volumeNumber}",
+	"dashboard_calendar_year_summary": "{completed} finished this year",
+	"dashboard_calendar_heatmap_less": "Less",
+	"dashboard_calendar_heatmap_more": "More",
+	"dashboard_calendar_schedule": "Schedule volume",
+	"dashboard_calendar_schedule_title": "Schedule a volume",
+	"dashboard_calendar_schedule_for": "For {date}",
+	"dashboard_calendar_schedule_search": "Search title or author…",
+	"dashboard_calendar_schedule_empty": "No volumes match your search.",
+	"dashboard_calendar_schedule_no_volumes": "You have no unread volumes to schedule.",
+	"dashboard_calendar_schedule_already": "Scheduled",
+	"dashboard_calendar_schedule_success": "Volume scheduled",
+	"dashboard_calendar_schedule_error": "Failed to schedule volume",
+	"dashboard_calendar_unschedule": "Remove from plan",
+	"dashboard_calendar_unschedule_success": "Removed from plan",
+	"dashboard_calendar_unschedule_error": "Failed to remove from plan",
 	"series_title": "Series Collection",
 	"series_search_placeholder": "Search title or author...",
 	"series_search_help_title": "Search help",
@@ -68,6 +87,8 @@
 	"series_search_help_fields_title": "Available fields",
 	"series_search_help_examples_title": "Examples",
 	"series_search_help_operators": "Prefix a term with \"-\" to exclude matching series.",
+	"series_empty": "No series yet. Add your first series to get started.",
+	"series_no_results": "No series match your search.",
 	"series_entry_volume": "Vol. {volumeNumber}",
 	"series_cover_alt": "Cover for {title}",
 	"series_addnewseries": "Add New Series",
@@ -77,25 +98,21 @@
 	"series_success_deleteseries": "Series deleted successfully",
 	"series_failure_deleteseries": "Failed to delete series",
 	"series_error_deleteseries": "An error occurred while deleting series",
-
 	"form_series_cu_title_label": "Title",
 	"form_series_cu_title_placeholder": "Enter series title",
 	"form_series_cu_author_label": "Author(s) (comma separated)",
 	"form_series_cu_author_placeholder": "Enter series author(s)",
 	"form_series_cu_status_label": "Status",
-
 	"dialog_series_add_title": "Add New Series",
 	"dialog_series_add_submit": "Add",
 	"dialog_series_add_success": "Series added successfully",
 	"dialog_series_add_invalid_data": "The series data you provided is invalid.",
 	"dialog_series_add_error": "An error occurred while adding series",
-
 	"dialog_series_edit_title": "Edit Series",
 	"dialog_series_edit_submit": "Save",
 	"dialog_series_edit_success": "Series updated successfully",
 	"dialog_series_edit_invalid_data": "The series data you provided is invalid.",
 	"dialog_series_edit_error": "An error occurred while updating series",
-
 	"series_addnewbatch": "Batch add series",
 	"dialog_series_batch_title": "Batch add series",
 	"dialog_series_batch_submit": "Add series",
@@ -109,7 +126,6 @@
 	"series_batch_col_author": "Author(s)",
 	"series_batch_col_status": "Status",
 	"series_batch_col_actions": "Actions",
-
 	"table_row_number": "Row {row}",
 	"table_column_menu": "Column options",
 	"table_row_menu": "Row options",
@@ -129,7 +145,6 @@
 	"table_insert_below": "Insert row below",
 	"table_delete_row": "Delete row",
 	"table_clipboard_error": "Could not access the clipboard",
-
 	"form_book_cu_volume_label": "Volume Number",
 	"form_book_cu_volume_placeholder": "Enter volume number",
 	"form_file_upload_label": "Upload a file (stored on your server)",
@@ -152,20 +167,26 @@
 	"form_book_cu_isbn_placeholder": "Enter ISBN",
 	"form_book_cu_status_label": "Status",
 	"form_book_cu_readstatus_label": "Read Status",
+	"book_progress_section_title": "Reading progress",
+	"form_book_cu_startedat_label": "Started reading",
+	"form_book_cu_completedat_label": "Finished reading",
+	"form_book_cu_readcount_label": "Times read",
+	"form_book_cu_readcount_placeholder": "0",
+	"book_detail_startedat_label": "Started reading",
+	"book_detail_completedat_label": "Finished reading",
+	"book_detail_readcount_label": "Times read",
+	"book_detail_error_progress": "Failed to update reading progress",
 	"form_book_cu_boughtat_label": "Purchase month (optional)",
 	"form_book_cu_boughtat_help": "Ignored while the volume is linked to an order — the order date takes precedence.",
-
 	"month_input_month_placeholder": "Month",
 	"month_input_year_placeholder": "Year",
 	"month_input_clear": "Clear date",
-
 	"dialog_book_add_title": "Add New Volume",
 	"dialog_book_add_submit": "Add",
 	"dialog_book_add_success": "Volume added successfully",
 	"dialog_book_add_invalid_data": "The volume data you provided is invalid.",
 	"dialog_book_add_failure": "Failed to add volume",
 	"dialog_book_add_error": "An error occurred while adding volume",
-
 	"series_detail_addbooks": "Add multiple volumes",
 	"dialog_book_batch_title": "Batch add volumes",
 	"dialog_book_batch_submit": "Add volumes",
@@ -188,14 +209,12 @@
 	"book_batch_cover_remove": "Remove cover",
 	"book_batch_cover_toggle_url": "Switch to URL import",
 	"book_batch_cover_toggle_file": "Switch to file upload",
-
 	"dialog_book_edit_title": "Edit Volume",
 	"dialog_book_edit_submit": "Save",
 	"dialog_book_edit_success": "Volume updated successfully",
 	"dialog_book_edit_invalid_data": "The volume data you provided is invalid.",
 	"dialog_book_edit_failure": "Failed to update volume",
 	"dialog_book_edit_error": "An error occurred while updating volume",
-
 	"book_form_step_details": "Details",
 	"book_form_step_cover": "Cover",
 	"book_form_step_purchase": "Purchase",
@@ -203,7 +222,6 @@
 	"book_form_summary_title": "Summary",
 	"book_form_review_hint": "Review the details below before saving.",
 	"book_form_review_no_cover": "No cover selected",
-
 	"form_order_cu_storename_label": "Store name",
 	"form_order_cu_storename_placeholder": "Enter store name",
 	"form_order_cu_ordernumber_label": "Order number",
@@ -211,47 +229,37 @@
 	"form_order_cu_orderdate_label": "Order date",
 	"form_order_cu_currency_label": "Currency",
 	"form_order_cu_currency_placeholder": "PLN",
-	"form_order_cu_receipt_label": "Receipt URL",
-	"form_order_cu_receipt_placeholder": "Enter receipt URL",
 	"form_order_cu_note_label": "Note",
 	"form_order_cu_note_placeholder": "Enter note",
-
 	"dialog_order_add_title": "Add New Order",
 	"dialog_order_add_submit": "Add",
 	"dialog_order_add_success": "Order added successfully",
 	"dialog_order_add_invalid_data": "The order data you provided is invalid.",
 	"dialog_order_add_error": "An error occurred while adding order",
-
 	"dialog_order_edit_title": "Edit Order",
 	"dialog_order_edit_submit": "Save",
 	"dialog_order_edit_success": "Order updated successfully",
 	"dialog_order_edit_invalid_data": "The order data you provided is invalid.",
 	"dialog_order_edit_error": "An error occurred while updating order",
-
 	"dialog_order_editadjustment_submit": "Save",
 	"dialog_order_editadjustment_success": "Adjustment updated",
 	"dialog_order_editadjustment_invalid_data": "The adjustment data you provided is invalid.",
 	"dialog_order_editadjustment_error": "An error occurred while updating adjustment",
-
 	"form_orderitem_book_label": "Volume",
 	"form_orderitem_book_placeholder": "Search by title, series or volume...",
 	"form_orderitem_noresults": "No volumes found.",
-
 	"dialog_order_addbook_title": "Add Volume",
 	"dialog_order_addbook_submit": "Add",
 	"dialog_order_addbook_success": "Volume added to order",
 	"dialog_order_addbook_invalid_data": "The volume data you provided is invalid.",
 	"dialog_order_addbook_error": "An error occurred while adding volume to order",
-
 	"form_orderadjustment_name_placeholder": "Name",
 	"form_orderadjustment_amount_placeholder": "Amount",
-
 	"dialog_order_addadjustment_button": "Add Adjustment",
 	"dialog_order_addadjustment_submit": "Add",
 	"dialog_order_addadjustment_success": "Adjustment added",
 	"dialog_order_addadjustment_invalid_data": "The adjustment data you provided is invalid.",
 	"dialog_order_addadjustment_error": "An error occurred while adding adjustment",
-
 	"orders_title": "Orders",
 	"orders_empty": "No orders found.",
 	"orders_search_placeholder": "Search orders... (e.g. title:Berserk, paidPrice:>39.99)",
@@ -276,7 +284,6 @@
 			}
 		}
 	],
-
 	"order_orderid_ordernumber_fallback": "Order",
 	"order_orderid_nostore": "No store",
 	"order_orderid_nodate": "No date",
@@ -320,28 +327,21 @@
 	"order_orderid_success_removeadjustment": "Adjustment removed",
 	"order_orderid_failure_removeadjustment": "Failed to remove adjustment",
 	"order_orderid_error_removeadjustment": "An error occurred while removing adjustment",
-
 	"settings_title": "Settings",
 	"settings_language": "Language",
 	"settings_language_description": "Choose the language used across the app.",
-
 	"db_seriesstatus_ongoing": "Ongoing",
 	"db_seriesstatus_hiatus": "Hiatus",
 	"db_seriesstatus_completed": "Completed",
 	"db_seriesstatus_cancelled": "Cancelled",
-
 	"db_bookstatus_wishlist": "Wishlist",
 	"db_bookstatus_ordered": "Ordered",
 	"db_bookstatus_owned": "Owned",
-
 	"db_readstatus_notread": "Not Read",
 	"db_readstatus_reading": "Reading",
 	"db_readstatus_completed": "Completed",
-
 	"stats_title": "Statistics",
-
 	"stats_tab_finance": "Finance",
-
 	"stats_finance_title": "Total Spent",
 	"stats_finance_no_data": "No spending data yet. Track volumes and orders to see your totals.",
 	"stats_finance_currency_pager": "Pick a currency",
@@ -360,7 +360,6 @@
 	"stats_finance_error": "Unable to load finance statistics.",
 	"stats_finance_retry": "Try again",
 	"stats_finance_unavailable": "Not available",
-
 	"stats_monthly_title": "Monthly spending",
 	"stats_monthly_no_data": "No spending data yet. Add volumes or place orders to see your month-to-month spending.",
 	"stats_monthly_avg_title": "Monthly average",
@@ -384,7 +383,6 @@
 	"stats_monthly_month": "Month",
 	"stats_monthly_orders": "Orders",
 	"stats_monthly_breakdown": "Month-by-month breakdown",
-
 	"books_undated_title": "Volumes without purchase date",
 	"books_undated_description": "Volumes that are not linked to an order and have no purchase month set. Set a month to move them into the monthly breakdown, or open the volume for full details.",
 	"books_undated_search_placeholder": "Search title or volume...",
@@ -402,7 +400,6 @@
 	"books_undated_success": "Purchase month saved",
 	"books_undated_error": "Failed to save purchase month",
 	"books_undated_back": "Back to stats",
-
 	"common_edit": "Edit",
 	"common_delete": "Delete",
 	"common_remove": "Remove",
@@ -413,8 +410,8 @@
 	"common_back": "Back",
 	"common_next": "Next",
 	"common_search_placeholder": "Search...",
+	"pagination_per_page": "Per page",
 	"common_currency_locked_aria": "Why is currency locked?",
-
 	"nav_home": "Home",
 	"nav_series": "Series",
 	"nav_orders": "Orders",
@@ -424,7 +421,6 @@
 	"nav_preferences": "Preferences",
 	"nav_logout": "Log out",
 	"nav_login": "Log in",
-
 	"login_title": "Login",
 	"login_email_label": "Email",
 	"login_email_placeholder": "Email",
@@ -433,7 +429,6 @@
 	"login_submit": "Login",
 	"login_submit_pending": "Logging in...",
 	"login_register_link": "Register",
-
 	"register_title": "Register",
 	"register_closed": "Registration is closed",
 	"register_username_label": "Username",
@@ -447,7 +442,6 @@
 	"register_submit": "Register",
 	"register_submit_pending": "Registering...",
 	"register_login_link": "Login",
-
 	"series_detail_addbook": "Add volume",
 	"series_detail_volumes": "Volumes",
 	"series_detail_grid_view": "Grid view",
@@ -469,9 +463,8 @@
 	"series_detail_success_readstatus": "Read status updated",
 	"series_detail_error_readstatus": "An error occurred while updating read status",
 	"series_detail_confirm_readreset_title": "Reset read progress",
-	"series_detail_confirm_readreset_message": "This volume is marked as {readStatus}. Changing its status to {status} will reset its read progress to \"Not Read\". Continue?",
+	"series_detail_confirm_readreset_message": "This volume is marked as {readStatus}. Changing its status to {status} will reset its read progress to \"Not Read\" and clear its reading dates and read count. Continue?",
 	"series_detail_confirm_readreset_confirm": "Reset and continue",
-
 	"book_detail_back": "Back to series",
 	"book_detail_author_label": "Author",
 	"book_detail_seriesstatus_label": "Series Status",
@@ -483,12 +476,10 @@
 	"book_detail_purchase_warning_aria": "Purchase date warning",
 	"book_detail_purchase_mismatch": "The purchase month differs from the order month and may be incorrect.",
 	"book_detail_success_status": "Status updated",
-
 	"order_detail_too_many": "Too many results (>100). Please refine your search.",
 	"order_detail_type_search": "Type to search manga...",
 	"order_detail_summary_title": "Order Summary",
 	"order_detail_adjustments_label": "Adjustments",
-
 	"form_book_cu_series_label": "Series",
 	"form_book_cu_series_placeholder": "Select a series",
 	"form_book_cu_paid_label": "Paid Price (optional)",

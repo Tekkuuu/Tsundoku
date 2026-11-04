@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
-import { getOwnedFile, readOwnedFileBytes } from '$lib/server/files';
-import { logger } from '$lib/server/logger';
+import { db } from '#lib/server/db/index.js';
+import { getOwnedFile, readOwnedFileBytes } from '#lib/server/services/files.js';
+import { logger } from '#lib/server/logger.js';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

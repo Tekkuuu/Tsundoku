@@ -1,8 +1,8 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
-import { FileError, FILE_KINDS, importFromUrl, type FileKind } from '$lib/server/files';
-import { logger } from '$lib/server/logger';
+import { db } from '#lib/server/db/index.js';
+import { FileError, FILE_KINDS, importFromUrl, type FileKind } from '#lib/server/services/files.js';
+import { logger } from '#lib/server/logger.js';
 
 /**
  * Import a copy of a remote file ("paste a URL, we snapshot the bytes").
@@ -17,17 +17,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			? (body.kind as FileKind)
 			: null;
 	if (!kind || typeof body?.url !== 'string' || !body.url.trim()) {
-		return json({ message: 'A file kind and URL are required' }, { status: 400 });
+		return Response.json({ message: 'A file kind and URL are required' }, { status: 400 });
 	}
 
 	try {
 		const row = await importFromUrl(db, { userId: locals.user.id, kind, url: body.url });
-		return json({ id: row.id });
+		return Response.json({ id: row.id, contentType: row.contentType, size: row.size });
 	} catch (err) {
 		if (err instanceof FileError) {
 			logger.warn({ userId: locals.user.id, code: err.code }, 'File import rejected');
 			const status = err.code === 'too-large' ? 413 : err.code === 'fetch-failed' ? 502 : 400;
-			return json({ message: err.message }, { status });
+			return Response.json({ message: err.message }, { status });
 		}
 		throw err;
 	}

@@ -8,11 +8,11 @@
 		RotateCcw
 	} from '@lucide/svelte';
 	import { Accordion } from '@skeletonlabs/skeleton-svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { getTotalSpend } from './totalSpend.remote';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getTotalSpend } from '#lib/remote/stats.remote.js';
 	import AdjustmentCategoryItem from './AdjustmentCategoryItem.svelte';
-	import { toaster } from '$lib/components/toaster';
-	import { createCurrencyFormatter } from '$lib/utils/money';
+	import { toaster } from '#lib/client/toaster.js';
+	import { createCurrencyFormatter } from '#lib/shared/money.js';
 
 	let data = $state(getTotalSpend());
 

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { ArrowUpRight, Check } from '@lucide/svelte';
-	import MonthInput from '$lib/components/MonthInput.svelte';
-	import { updateBoughtAt } from '$lib/components/forms/book';
-	import { createRemoteActionHandler } from '$lib/utils/formUtils';
-	import { m } from '$lib/paraglide/messages';
+	import MonthInput from '#lib/components/form/MonthInput.svelte';
+	import { updateBoughtAt } from '#lib/remote/books.remote.js';
+	import { createRemoteActionHandler } from '#lib/client/form-handlers.js';
+	import { m } from '#lib/paraglide/messages.js';
 
 	type UndatedRow = {
 		id: string;
@@ -35,7 +35,7 @@
 			success: m.books_undated_success(),
 			error: m.books_undated_error(),
 			run: () => updateBoughtAt({ id: row.id, boughtAt }),
-			onSuccess: () => invalidateAll()
+			onSuccess: () => refreshAll()
 		});
 		save().finally(() => {
 			saving = false;
@@ -63,7 +63,7 @@
 	</td>
 	<td class="text-right whitespace-nowrap">
 		<a
-			href={resolve(`/series/${row.seriesId}/${row.id}`)}
+			href={resolve(`series/${row.seriesId}/${row.id}`)}
 			class="btn h-10 preset-tonal"
 			aria-label={m.books_undated_open_volume({
 				title: row.seriesTitle,

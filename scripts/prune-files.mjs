@@ -7,7 +7,7 @@
  * saving — are reaped here. Only files older than 24h with no references
  * from book.cover_file_id / "order".receipt_file_id are removed.
  *
- *   pnpm files:prune
+ *   vp run files:prune
  *
  * DATA_DIR defaults to ./data. DATABASE_URL comes from the environment.
  */

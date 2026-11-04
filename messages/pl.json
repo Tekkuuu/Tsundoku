@@ -1,21 +1,16 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-
 	"toast_title_success": "Sukces",
 	"toast_title_invalid_data": "Nieprawidłowe dane",
 	"toast_title_error": "Błąd",
 	"toast_description_invalid_data": "Formularz zawiera błędy.",
 	"toast_description_error": "Coś poszło nie tak.",
-
 	"dashboard_error_occurred": "Wystąpił błąd",
-
 	"error_title": "Coś poszło nie tak",
 	"error_description": "Nie udało się wczytać tej strony. Spróbuj ponownie lub wróć na stronę główną.",
 	"error_retry": "Spróbuj ponownie",
 	"error_home": "Wróć na stronę główną",
-
 	"dashboard_widget_readprogress": "Postęp czytania",
-
 	"dashboard_widget_reading_title": "Aktualnie czytane",
 	"dashboard_widget_reading_empty": "Brak aktualnie czytanych tomów.",
 	"dashboard_widget_reading_nocover": "Brak okładki",
@@ -24,7 +19,6 @@
 	"dashboard_widget_reading_openbook": "Otwórz tom",
 	"dashboard_widget_reading_success_bookcomplted": "Oznaczono jako przeczytane",
 	"dashboard_widget_reading_error_bookcomplted": "Nie udało się oznaczyć jako przeczytane",
-
 	"dashboard_widget_ordered_title": "Zamówione",
 	"dashboard_widget_ordered_empty": "Brak zamówionych tomów oczekujących na dostawę.",
 	"dashboard_widget_ordered_markowned": "Oznacz jako posiadane",
@@ -33,18 +27,14 @@
 	"dashboard_widget_ordered_incomplete_title": "Niepełne dane zakupu",
 	"dashboard_widget_ordered_incomplete_message": "Ten tom nie ma przypisanego zamówienia i brakuje mu daty zakupu lub zapłaconej ceny. Oznaczenie go jako posiadanego pozostawi niekompletne dane w statystykach.",
 	"dashboard_widget_ordered_incomplete_confirm": "OK",
-
 	"dashboard_cover_alt": "Okładka: {title}",
-
 	"dashboard_kpimarquee_series": "Serie",
 	"dashboard_kpimarquee_ownedvolumes": "Posiadane tomy",
 	"dashboard_kpimarquee_readvolumes": "Przeczytane tomy",
 	"dashboard_kpimarquee_orderedvolumes": "Zamówione tomy",
 	"dashboard_kpimarquee_wishlistedvolumes": "Tomy na liście życzeń",
 	"dashboard_kpimarquee_orders": "Zamówienia",
-
 	"dashboard_widget_readprogress_label": "{read} / {owned} tomów",
-
 	"dashboard_widget_toread_title": "Do przeczytania",
 	"dashboard_widget_toread_empty": "Twoja lista zaległości jest pusta — brak nieprzeczytanych tomów. Świetnie!",
 	"dashboard_widget_toread_noresults": "Brak tomów pasujących do wyszukiwania.",
@@ -58,9 +48,38 @@
 	"dashboard_widget_toread_startreading": "Zacznij czytać",
 	"dashboard_widget_toread_success_started": "Rozpoczęto czytanie",
 	"dashboard_widget_toread_error_started": "Nie udało się rozpocząć czytania",
-
 	"dashboard_widget_carousel_page": "Strona {page} z {totalPages}",
-
+	"dashboard_calendar_title": "Kalendarz czytania",
+	"dashboard_calendar_view_switch": "Widok kalendarza",
+	"dashboard_calendar_view_month": "Miesiąc",
+	"dashboard_calendar_view_year": "Rok",
+	"dashboard_calendar_today": "Dzisiaj",
+	"dashboard_calendar_previous_month": "Poprzedni miesiąc",
+	"dashboard_calendar_next_month": "Następny miesiąc",
+	"dashboard_calendar_previous_year": "Poprzedni rok",
+	"dashboard_calendar_next_year": "Następny rok",
+	"dashboard_calendar_select_day": "Wybierz {date}",
+	"dashboard_calendar_day_with_reads": "{date}: {reads}",
+	"dashboard_calendar_empty_day": "Brak ukończonych lub zaplanowanych tomów.",
+	"dashboard_calendar_close_day": "Zamknij szczegóły dnia",
+	"dashboard_calendar_completed": "Ukończone",
+	"dashboard_calendar_planned": "Zaplanowane",
+	"dashboard_calendar_read_entry": "{title} · Tom {volumeNumber}",
+	"dashboard_calendar_year_summary": "{completed} ukończonych w tym roku",
+	"dashboard_calendar_heatmap_less": "Mniej",
+	"dashboard_calendar_heatmap_more": "Więcej",
+	"dashboard_calendar_schedule": "Zaplanuj tom",
+	"dashboard_calendar_schedule_title": "Zaplanuj tom",
+	"dashboard_calendar_schedule_for": "Na {date}",
+	"dashboard_calendar_schedule_search": "Szukaj tytułu lub autora…",
+	"dashboard_calendar_schedule_empty": "Brak tomów pasujących do wyszukiwania.",
+	"dashboard_calendar_schedule_no_volumes": "Nie masz nieprzeczytanych tomów do zaplanowania.",
+	"dashboard_calendar_schedule_already": "Zaplanowany",
+	"dashboard_calendar_schedule_success": "Zaplanowano tom",
+	"dashboard_calendar_schedule_error": "Nie udało się zaplanować tomu",
+	"dashboard_calendar_unschedule": "Usuń z planu",
+	"dashboard_calendar_unschedule_success": "Usunięto z planu",
+	"dashboard_calendar_unschedule_error": "Nie udało się usunąć z planu",
 	"series_title": "Kolekcja serii",
 	"series_search_placeholder": "Wyszukaj tytuł lub autora...",
 	"series_search_help_title": "Pomoc wyszukiwania",
@@ -68,6 +87,8 @@
 	"series_search_help_fields_title": "Dostępne pola",
 	"series_search_help_examples_title": "Przykłady",
 	"series_search_help_operators": "Poprzedź termin znakiem „-”, aby wykluczyć pasujące serie.",
+	"series_empty": "Nie masz jeszcze żadnych serii. Dodaj pierwszą, aby rozpocząć.",
+	"series_no_results": "Żadna seria nie pasuje do wyszukiwania.",
 	"series_entry_volume": "Tom {volumeNumber}",
 	"series_cover_alt": "Okładka: {title}",
 	"series_addnewseries": "Dodaj nową serię",
@@ -77,25 +98,21 @@
 	"series_success_deleteseries": "Seria została usunięta",
 	"series_failure_deleteseries": "Nie udało się usunąć serii",
 	"series_error_deleteseries": "Wystąpił błąd podczas usuwania serii",
-
 	"form_series_cu_title_label": "Tytuł",
 	"form_series_cu_title_placeholder": "Wpisz tytuł serii",
 	"form_series_cu_author_label": "Autorzy (oddzieleni przecinkami)",
 	"form_series_cu_author_placeholder": "Wpisz autorów serii",
 	"form_series_cu_status_label": "Status",
-
 	"dialog_series_add_title": "Dodaj nową serię",
 	"dialog_series_add_submit": "Dodaj",
 	"dialog_series_add_success": "Seria została dodana",
 	"dialog_series_add_invalid_data": "Podane dane serii są nieprawidłowe.",
 	"dialog_series_add_error": "Wystąpił błąd podczas dodawania serii",
-
 	"dialog_series_edit_title": "Edytuj serię",
 	"dialog_series_edit_submit": "Zapisz",
 	"dialog_series_edit_success": "Seria została zaktualizowana",
 	"dialog_series_edit_invalid_data": "Podane dane serii są nieprawidłowe.",
 	"dialog_series_edit_error": "Wystąpił błąd podczas aktualizacji serii",
-
 	"series_addnewbatch": "Dodaj wiele serii",
 	"dialog_series_batch_title": "Dodawanie wielu serii",
 	"dialog_series_batch_submit": "Dodaj serie",
@@ -109,7 +126,6 @@
 	"series_batch_col_author": "Autor(zy)",
 	"series_batch_col_status": "Status",
 	"series_batch_col_actions": "Akcje",
-
 	"table_row_number": "Wiersz {row}",
 	"table_column_menu": "Opcje kolumny",
 	"table_row_menu": "Opcje wiersza",
@@ -129,7 +145,6 @@
 	"table_insert_below": "Wstaw wiersz poniżej",
 	"table_delete_row": "Usuń wiersz",
 	"table_clipboard_error": "Brak dostępu do schowka",
-
 	"form_book_cu_volume_label": "Numer tomu",
 	"form_book_cu_volume_placeholder": "Wpisz numer tomu",
 	"form_file_upload_label": "Prześlij plik (zapisywany na Twoim serwerze)",
@@ -152,20 +167,26 @@
 	"form_book_cu_isbn_placeholder": "Wpisz numer ISBN",
 	"form_book_cu_status_label": "Status",
 	"form_book_cu_readstatus_label": "Status czytania",
+	"book_progress_section_title": "Postęp czytania",
+	"form_book_cu_startedat_label": "Rozpoczęto czytanie",
+	"form_book_cu_completedat_label": "Ukończono czytanie",
+	"form_book_cu_readcount_label": "Ile razy przeczytany",
+	"form_book_cu_readcount_placeholder": "0",
+	"book_detail_startedat_label": "Rozpoczęto czytanie",
+	"book_detail_completedat_label": "Ukończono czytanie",
+	"book_detail_readcount_label": "Ile razy przeczytany",
+	"book_detail_error_progress": "Nie udało się zaktualizować postępu czytania",
 	"form_book_cu_boughtat_label": "Miesiąc zakupu (opcjonalnie)",
 	"form_book_cu_boughtat_help": "Pole ignorowane, gdy tom jest powiązany z zamówieniem — nadrzędna jest wtedy data zamówienia.",
-
 	"month_input_month_placeholder": "Miesiąc",
 	"month_input_year_placeholder": "Rok",
 	"month_input_clear": "Wyczyść datę",
-
 	"dialog_book_add_title": "Dodaj nowy tom",
 	"dialog_book_add_submit": "Dodaj",
 	"dialog_book_add_success": "Tom został dodany",
 	"dialog_book_add_invalid_data": "Podane dane tomu są nieprawidłowe.",
 	"dialog_book_add_failure": "Nie udało się dodać tomu",
 	"dialog_book_add_error": "Wystąpił błąd podczas dodawania tomu",
-
 	"series_detail_addbooks": "Dodaj wiele tomów",
 	"dialog_book_batch_title": "Dodawanie wielu tomów",
 	"dialog_book_batch_submit": "Dodaj tomy",
@@ -188,14 +209,12 @@
 	"book_batch_cover_remove": "Usuń okładkę",
 	"book_batch_cover_toggle_url": "Przełącz na import z URL",
 	"book_batch_cover_toggle_file": "Przełącz na przesyłanie pliku",
-
 	"dialog_book_edit_title": "Edytuj tom",
 	"dialog_book_edit_submit": "Zapisz",
 	"dialog_book_edit_success": "Tom został zaktualizowany",
 	"dialog_book_edit_invalid_data": "Podane dane tomu są nieprawidłowe.",
 	"dialog_book_edit_failure": "Nie udało się zaktualizować tomu",
 	"dialog_book_edit_error": "Wystąpił błąd podczas aktualizacji tomu",
-
 	"book_form_step_details": "Szczegóły",
 	"book_form_step_cover": "Okładka",
 	"book_form_step_purchase": "Zakup",
@@ -203,7 +222,6 @@
 	"book_form_summary_title": "Podsumowanie",
 	"book_form_review_hint": "Sprawdź poniższe dane przed zapisaniem.",
 	"book_form_review_no_cover": "Nie wybrano okładki",
-
 	"form_order_cu_storename_label": "Nazwa sklepu",
 	"form_order_cu_storename_placeholder": "Wpisz nazwę sklepu",
 	"form_order_cu_ordernumber_label": "Numer zamówienia",
@@ -211,47 +229,37 @@
 	"form_order_cu_orderdate_label": "Data zamówienia",
 	"form_order_cu_currency_label": "Waluta",
 	"form_order_cu_currency_placeholder": "PLN",
-	"form_order_cu_receipt_label": "Adres URL rachunku/paragonu",
-	"form_order_cu_receipt_placeholder": "Wklej adres URL paragonu",
 	"form_order_cu_note_label": "Notatka",
 	"form_order_cu_note_placeholder": "Wpisz notatkę do zamówienia",
-
 	"dialog_order_add_title": "Dodaj nowe zamówienie",
 	"dialog_order_add_submit": "Dodaj",
 	"dialog_order_add_success": "Zamówienie zostało dodane",
 	"dialog_order_add_invalid_data": "Podane dane zamówienia są nieprawidłowe.",
 	"dialog_order_add_error": "Wystąpił błąd podczas dodawania zamówienia",
-
 	"dialog_order_edit_title": "Edytuj zamówienie",
 	"dialog_order_edit_submit": "Zapisz",
 	"dialog_order_edit_success": "Zamówienie zostało zaktualizowane",
 	"dialog_order_edit_invalid_data": "Podane dane zamówienia są nieprawidłowe.",
 	"dialog_order_edit_error": "Wystąpił błąd podczas aktualizacji zamówienia",
-
 	"dialog_order_editadjustment_submit": "Zapisz",
 	"dialog_order_editadjustment_success": "Korekta została zaktualizowana",
 	"dialog_order_editadjustment_invalid_data": "Podane dane korekty są nieprawidłowe.",
 	"dialog_order_editadjustment_error": "Wystąpił błąd podczas aktualizacji korekty",
-
 	"form_orderitem_book_label": "Tom",
 	"form_orderitem_book_placeholder": "Szukaj po tytule, serii lub tomie...",
 	"form_orderitem_noresults": "Nie znaleziono tomów.",
-
 	"dialog_order_addbook_title": "Dodaj tom",
 	"dialog_order_addbook_submit": "Dodaj",
 	"dialog_order_addbook_success": "Tom został dodany do zamówienia",
 	"dialog_order_addbook_invalid_data": "Podane dane tomu są nieprawidłowe.",
 	"dialog_order_addbook_error": "Wystąpił błąd podczas dodawania tomu do zamówienia",
-
 	"form_orderadjustment_name_placeholder": "Nazwa korekty",
 	"form_orderadjustment_amount_placeholder": "Kwota",
-
 	"dialog_order_addadjustment_button": "Dodaj korektę",
 	"dialog_order_addadjustment_submit": "Dodaj",
 	"dialog_order_addadjustment_success": "Korekta została dodana",
 	"dialog_order_addadjustment_invalid_data": "Podane dane korekty są nieprawidłowe.",
 	"dialog_order_addadjustment_error": "Wystąpił błąd podczas dodawania korekty",
-
 	"orders_title": "Zamówienia",
 	"orders_empty": "Brak zamówień.",
 	"orders_search_placeholder": "Szukaj zamówień... (np. title:Berserk, paidPrice:>39.99)",
@@ -278,7 +286,6 @@
 			}
 		}
 	],
-
 	"order_orderid_ordernumber_fallback": "Zamówienie",
 	"order_orderid_nostore": "Brak sklepu",
 	"order_orderid_nodate": "Brak daty",
@@ -322,28 +329,21 @@
 	"order_orderid_success_removeadjustment": "Korekta została usunięta",
 	"order_orderid_failure_removeadjustment": "Nie udało się usunąć korekty",
 	"order_orderid_error_removeadjustment": "Wystąpił błąd podczas usuwania korekty",
-
 	"settings_title": "Ustawienia",
 	"settings_language": "Język",
 	"settings_language_description": "Wybierz język wyświetlania aplikacji.",
-
 	"db_seriesstatus_ongoing": "Wydawana",
 	"db_seriesstatus_hiatus": "Zawieszona",
 	"db_seriesstatus_completed": "Zakończona",
 	"db_seriesstatus_cancelled": "Anulowana",
-
 	"db_bookstatus_wishlist": "Lista życzeń",
 	"db_bookstatus_ordered": "Zamówiona",
 	"db_bookstatus_owned": "Posiadana",
-
 	"db_readstatus_notread": "Nieprzeczytany",
 	"db_readstatus_reading": "W trakcie czytania",
 	"db_readstatus_completed": "Przeczytany",
-
 	"stats_title": "Statystyki",
-
 	"stats_tab_finance": "Finanse",
-
 	"stats_finance_title": "Wydano łącznie",
 	"stats_finance_no_data": "Brak danych o wydatkach. Dodawaj tomy i zamówienia, aby zobaczyć podsumowanie.",
 	"stats_finance_currency_pager": "Wybierz walutę",
@@ -362,7 +362,6 @@
 	"stats_finance_error": "Nie udało się wczytać statystyk finansowych.",
 	"stats_finance_retry": "Spróbuj ponownie",
 	"stats_finance_unavailable": "Brak danych",
-
 	"stats_monthly_title": "Wydatki miesięczne",
 	"stats_monthly_no_data": "Brak danych o wydatkach. Dodawaj tomy lub twórz zamówienia, aby śledzić wydatki w czasie.",
 	"stats_monthly_avg_title": "Średnia miesięczna",
@@ -386,7 +385,6 @@
 	"stats_monthly_month": "Miesiąc",
 	"stats_monthly_orders": "Zamówienia",
 	"stats_monthly_breakdown": "Zestawienie miesięczne",
-
 	"books_undated_title": "Tomy bez daty zakupu",
 	"books_undated_description": "Tomy nieprzypisane do zamówienia i bez określonego miesiąca zakupu. Wskaż miesiąc, aby uwzględnić je w zestawieniu miesięcznym, lub otwórz dany tom, by zobaczyć szczegóły.",
 	"books_undated_search_placeholder": "Szukaj tytułu lub tomu...",
@@ -404,7 +402,6 @@
 	"books_undated_success": "Zapisano miesiąc zakupu",
 	"books_undated_error": "Nie udało się zapisać miesiąca zakupu",
 	"books_undated_back": "Wróć do statystyk",
-
 	"common_edit": "Edytuj",
 	"common_delete": "Usuń",
 	"common_remove": "Usuń",
@@ -415,8 +412,8 @@
 	"common_back": "Wstecz",
 	"common_next": "Dalej",
 	"common_search_placeholder": "Szukaj...",
+	"pagination_per_page": "Na stronę",
 	"common_currency_locked_aria": "Dlaczego waluta jest zablokowana?",
-
 	"nav_home": "Pulpit",
 	"nav_series": "Serie",
 	"nav_orders": "Zamówienia",
@@ -426,7 +423,6 @@
 	"nav_preferences": "Preferencje",
 	"nav_logout": "Wyloguj się",
 	"nav_login": "Zaloguj się",
-
 	"login_title": "Logowanie",
 	"login_email_label": "Adres e-mail",
 	"login_email_placeholder": "Adres e-mail",
@@ -435,7 +431,6 @@
 	"login_submit": "Zaloguj się",
 	"login_submit_pending": "Logowanie...",
 	"login_register_link": "Zarejestruj się",
-
 	"register_title": "Rejestracja",
 	"register_closed": "Rejestracja jest zamknięta",
 	"register_username_label": "Nazwa użytkownika",
@@ -449,7 +444,6 @@
 	"register_submit": "Zarejestruj się",
 	"register_submit_pending": "Rejestrowanie...",
 	"register_login_link": "Zaloguj się",
-
 	"series_detail_addbook": "Dodaj tom",
 	"series_detail_volumes": "Tomy",
 	"series_detail_grid_view": "Widok siatki",
@@ -471,9 +465,8 @@
 	"series_detail_success_readstatus": "Status czytania został zaktualizowany",
 	"series_detail_error_readstatus": "Wystąpił błąd podczas aktualizacji statusu czytania",
 	"series_detail_confirm_readreset_title": "Zresetować postęp czytania",
-	"series_detail_confirm_readreset_message": "Ten tom ma status czytania „{readStatus}”. Zmiana statusu na „{status}” zresetuje postęp czytania do „Nieprzeczytany”. Kontynuować?",
+	"series_detail_confirm_readreset_message": "Ten tom ma status czytania „{readStatus}”. Zmiana statusu na „{status}” zresetuje postęp czytania do „Nieprzeczytany” oraz wyczyści daty czytania i licznik przeczytań. Kontynuować?",
 	"series_detail_confirm_readreset_confirm": "Zresetuj i kontynuuj",
-
 	"book_detail_back": "Wróć do serii",
 	"book_detail_author_label": "Autor",
 	"book_detail_seriesstatus_label": "Status serii",
@@ -485,12 +478,10 @@
 	"book_detail_purchase_warning_aria": "Ostrzeżenie o dacie zakupu",
 	"book_detail_purchase_mismatch": "Miesiąc zakupu różni się od daty zamówienia i może być nieprawidłowy.",
 	"book_detail_success_status": "Status został zaktualizowany",
-
 	"order_detail_too_many": "Zbyt wiele wyników (>100). Doprecyzuj wyszukiwanie.",
 	"order_detail_type_search": "Wpisz, aby wyszukać mangę...",
 	"order_detail_summary_title": "Podsumowanie zamówienia",
 	"order_detail_adjustments_label": "Korekty",
-
 	"form_book_cu_series_label": "Seria",
 	"form_book_cu_series_placeholder": "Wybierz serię",
 	"form_book_cu_paid_label": "Zapłacona kwota (opcjonalnie)",

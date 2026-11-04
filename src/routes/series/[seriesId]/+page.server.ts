@@ -1,13 +1,13 @@
-import { db } from '$lib/server/db';
-import { series, book, order, orderItem } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { series, book, order, orderItem } from '#lib/server/db/schema.js';
 import { eq, and } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { logger } from '$lib/server/logger';
+import { logger } from '#lib/server/logger.js';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
-		error(401, { message: 'Unauthorized' });
+		error(401, 'Unauthorized');
 	}
 
 	logger.debug({ userId: locals.user.id, seriesId: params.seriesId }, 'Fetching series info');
@@ -30,7 +30,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (!seriesInfo) {
 		logger.warn({ userId: locals.user.id, seriesId: params.seriesId }, 'Series not found');
-		error(404, { message: 'Series not found' });
+		error(404, 'Series not found');
 	}
 
 	// One book can be in at most one order: map bookId -> order info so the UI

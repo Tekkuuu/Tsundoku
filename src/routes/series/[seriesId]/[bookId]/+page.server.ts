@@ -1,9 +1,9 @@
-import { db } from '$lib/server/db';
-import { series, book, order, orderItem } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { series, book, order, orderItem } from '#lib/server/db/schema.js';
 import { eq, and, asc } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { logger } from '$lib/server/logger';
+import { logger } from '#lib/server/logger.js';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			{ userId: locals.user.id, seriesId: params.seriesId },
 			'Series not found or access denied'
 		);
-		error(404, { message: 'Series not found' });
+		error(404, 'Series not found');
 	}
 
 	const bookInfo = (
@@ -50,7 +50,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			{ userId: locals.user.id, seriesId: params.seriesId, bookId: params.bookId },
 			'Book not found or access denied'
 		);
-		error(404, { message: 'Book not found' });
+		error(404, 'Book not found');
 	}
 
 	const seriesBooks = await db

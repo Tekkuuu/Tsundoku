@@ -1,9 +1,9 @@
-import { db } from '$lib/server/db';
-import { order, orderItem, book, series } from '$lib/server/db/schema';
+import { db } from '#lib/server/db/index.js';
+import { order, orderItem, book, series } from '#lib/server/db/schema.js';
 import { and, asc, eq, isNotNull, notInArray } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { logger } from '$lib/server/logger';
+import { logger } from '#lib/server/logger.js';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) throw redirect(302, '/login');
@@ -30,7 +30,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (!orderData) {
 		logger.warn({ userId: locals.user.id, orderId: params.orderId }, 'Order not found');
-		error(404, { message: 'Order not found' });
+		error(404, 'Order not found');
 	}
 
 	const orderedBooks = (

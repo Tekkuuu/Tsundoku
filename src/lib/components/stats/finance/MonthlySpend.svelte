@@ -3,12 +3,12 @@
 	import { resolve } from '$app/paths';
 	import { Accordion } from '@skeletonlabs/skeleton-svelte';
 	import { BarChart, Tooltip } from 'layerchart';
-	import { m } from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { getMonthlySpend, type MonthlyBucket } from './monthlySpend.remote';
-	import { toaster } from '$lib/components/toaster';
-	import { createCurrencyFormatter } from '$lib/utils/money';
-	import MonthInput from '$lib/components/MonthInput.svelte';
+	import { m } from '#lib/paraglide/messages.js';
+	import { getLocale } from '#lib/paraglide/runtime.js';
+	import { getMonthlySpend, type MonthlyBucket } from '#lib/remote/stats.remote.js';
+	import { toaster } from '#lib/client/toaster.js';
+	import { createCurrencyFormatter } from '#lib/shared/money.js';
+	import MonthInput from '#lib/components/form/MonthInput.svelte';
 
 	const BOOKS_COLOR = 'var(--color-primary-500)';
 	const FEES_COLOR = 'var(--color-error-500)';
@@ -290,26 +290,26 @@
 						<article
 							class="flex min-w-0 flex-col gap-1 rounded-lg bg-primary-500/10 p-2 ring-1 ring-primary-500/30"
 						>
-							<span class="truncate text-xs font-medium text-primary-700-300"
-								>{m.stats_monthly_avg_title()}</span
-							>
+							<span class="truncate text-xs font-medium text-primary-700-300">
+								{m.stats_monthly_avg_title()}
+							</span>
 							<p class="text-lg leading-tight font-bold wrap-break-word tabular-nums">
 								{formatter.format(netTotal / monthCount)}
 							</p>
 							<span class="truncate text-xs leading-tight text-surface-500">{range}</span>
 						</article>
 						<article class="flex min-w-0 flex-col gap-1 rounded-lg bg-surface-200-800 p-2">
-							<span class="truncate text-xs font-medium text-surface-500"
-								>{m.stats_monthly_avg_books()}</span
-							>
+							<span class="truncate text-xs font-medium text-surface-500">
+								{m.stats_monthly_avg_books()}
+							</span>
 							<p class="text-lg leading-tight font-bold wrap-break-word tabular-nums">
 								{formatter.format(booksTotal / monthCount)}
 							</p>
 						</article>
 						<article class="flex min-w-0 flex-col gap-1 rounded-lg bg-surface-200-800 p-2">
-							<span class="truncate text-xs font-medium text-surface-500"
-								>{m.stats_monthly_avg_fees()}</span
-							>
+							<span class="truncate text-xs font-medium text-surface-500">
+								{m.stats_monthly_avg_fees()}
+							</span>
 							<p
 								class="text-lg leading-tight font-bold wrap-break-word text-error-600-400 tabular-nums"
 							>
@@ -317,9 +317,9 @@
 							</p>
 						</article>
 						<article class="flex min-w-0 flex-col gap-1 rounded-lg bg-surface-200-800 p-2">
-							<span class="truncate text-xs font-medium text-surface-500"
-								>{m.stats_monthly_avg_savings()}</span
-							>
+							<span class="truncate text-xs font-medium text-surface-500">
+								{m.stats_monthly_avg_savings()}
+							</span>
 							<p
 								class="text-lg leading-tight font-bold wrap-break-word text-success-600-400 tabular-nums"
 							>
@@ -341,9 +341,9 @@
 									<Tooltip.Root>
 										{#snippet children({ data: tooltipData })}
 											{@const row = tooltipData as LabeledBucket}
-											<Tooltip.Header
-												>{row.monthLabel} · {formatter.format(row.total)}</Tooltip.Header
-											>
+											<Tooltip.Header>
+												{row.monthLabel} · {formatter.format(row.total)}
+											</Tooltip.Header>
 											<Tooltip.List>
 												<Tooltip.Item
 													label={m.stats_monthly_book_cost()}
@@ -395,9 +395,9 @@
 											>
 												<span class="min-w-0 truncate font-medium">{group.label}</span>
 												<span class="flex shrink-0 items-center gap-2">
-													<span class="font-semibold tabular-nums"
-														>{formatter.format(group.total)}</span
-													>
+													<span class="font-semibold tabular-nums">
+														{formatter.format(group.total)}
+													</span>
 													<Accordion.ItemIndicator>
 														<ChevronDown class="size-4 shrink-0" />
 													</Accordion.ItemIndicator>
@@ -441,10 +441,13 @@
 						<p class="text-lg leading-tight font-bold wrap-break-word tabular-nums">
 							{formatter.format(unknown.bookCost)}
 						</p>
-						<span class="text-xs wrap-break-word text-surface-500"
-							>{unknown.bookCount} {m.stats_monthly_unknown_books()}</span
-						>
-						<a href={resolve('/books/undated')} class="ml-auto btn preset-tonal btn-sm">
+
+						<span class="text-xs wrap-break-word text-surface-500">
+							{unknown.bookCount}
+							{m.stats_monthly_unknown_books()}
+						</span>
+
+						<a href={resolve('books/undated')} class="ml-auto btn preset-tonal btn-sm">
 							{m.stats_monthly_unknown_view_list()}
 						</a>
 					</div>

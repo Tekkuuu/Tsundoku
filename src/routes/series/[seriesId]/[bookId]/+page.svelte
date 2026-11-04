@@ -1,17 +1,20 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import BookStatusResetDialog from '#lib/components/book/BookStatusResetDialog.svelte';
 	import {
-		BookStatusResetDialog,
+		updateBookProgress,
 		updateBookReadStatus,
 		updateBookStatus
-	} from '$lib/components/forms/book';
-	import { createRemoteActionHandler } from '$lib/utils/formUtils';
-	import BookCover from '$lib/components/BookCover.svelte';
-	import { coverSrc } from '$lib/fileUrl';
-	import type { BookStatus, ReadStatus } from '$lib/validation/book';
-	import { book as bookValidation } from '$lib/validation';
-	import { formatBoughtAtMonth } from '$lib/validation/book';
+	} from '#lib/remote/books.remote.js';
+	import { createRemoteActionHandler } from '#lib/client/form-handlers.js';
+	import { toaster } from '#lib/client/toaster.js';
+	import BookCover from '#lib/components/book/BookCover.svelte';
+	import DatePickerField from '#lib/components/form/DatePickerField.svelte';
+	import { coverSrc } from '#lib/shared/file-url.js';
+	import type { BookStatus, ReadStatus } from '#lib/shared/validation/book.js';
+	import { book as bookValidation } from '#lib/shared/validation/index.js';
+	import { formatBoughtAtMonth } from '#lib/shared/validation/book.js';
 	import {
 		BadgeCheck,
 		BookOpen,
@@ -26,9 +29,13 @@
 		ShoppingCart
 	} from '@lucide/svelte';
 	import { Menu, Portal, Tooltip } from '@skeletonlabs/skeleton-svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { getBookStatusText, getReadStatusText, needsReadReset } from '$lib/components/forms/book';
-	import { getSeriesStatusText } from '$lib/components/forms/series';
+	import { m } from '#lib/paraglide/messages.js';
+	import {
+		getBookStatusText,
+		getReadStatusText,
+		needsReadReset
+	} from '#lib/components/book/book-labels.js';
+	import { getSeriesStatusText } from '#lib/components/series/series-labels.js';
 
 	let { data } = $props();
 
@@ -37,10 +44,102 @@
 
 	let bookReadStatusTarget = $state({ id: '' });
 	let bookReadStatusValue = $state(bookValidation.readStatusEnum.options[0]);
-	let pendingStatusReset = $state<{ readStatus: ReadStatus; status: BookStatus } | null>(null);
+	let pendingStatusReset = $state<{
+		readStatus: ReadStatus;
+		status: BookStatus;
+	} | null>(null);
+
+	type DateField = 'startedAt' | 'completedAt';
+	type DateDrafts = Partial<Record<DateField, string>>;
+
+	/**
+	 * Optimistic dates while their save is in flight, keyed by book so a draft
+	 * never leaks into another book. Removing a draft falls back to the
+	 * server-provided date, which is what a failed save should show.
+	 */
+	let dateDrafts = $state<Record<string, DateDrafts>>({});
+
+	const drafts = $derived(dateDrafts[data.bookInfo.id] ?? {});
+	const startedAt = $derived(drafts.startedAt ?? data.bookInfo.startedAt ?? '');
+	const completedAt = $derived(drafts.completedAt ?? data.bookInfo.completedAt ?? '');
 
 	function formatPrice(price: string | null, currency: string | null) {
 		return price === null ? '—' : `${price}${currency ? ` ${currency}` : ''}`;
+	}
+
+	/**
+	 * Formats a stored YYYY-MM-DD date for display. Parsed as local date parts so the
+	 * day does not shift with the timezone.
+	 */
+	function formatDay(value: string | null) {
+		if (!value) return '—';
+		const [year, month, day] = value.split('-').map(Number);
+		return new Date(year, month - 1, day).toLocaleDateString();
+	}
+
+	/**
+	 * Read count is controlled by the server data and persists on change. A
+	 * failed save (e.g. Finished before Started) puts the input back to its
+	 * stored value and surfaces a toast.
+	 */
+	type ProgressPatch = {
+		startedAt?: string;
+		completedAt?: string;
+		readCount?: number;
+	};
+
+	function onReadCountChange(input: HTMLInputElement) {
+		const readCount = input.value === '' ? 0 : Math.trunc(Number(input.value));
+		if (!Number.isFinite(readCount) || readCount < 0) {
+			input.value = String(data.bookInfo.readCount);
+			return;
+		}
+		void saveProgress(input, { readCount }, String(data.bookInfo.readCount));
+	}
+
+	function onDateChange(field: DateField, value: string) {
+		const bookId = data.bookInfo.id;
+		dateDrafts = {
+			...dateDrafts,
+			[bookId]: { ...dateDrafts[bookId], [field]: value }
+		};
+		void saveDate(bookId, field, value);
+	}
+
+	async function saveDate(bookId: string, field: DateField, value: string) {
+		try {
+			await updateBookProgress({ id: bookId, [field]: value });
+			await refreshAll();
+		} catch (err) {
+			console.error('[progress] error', err);
+			toaster.error({
+				title: m.toast_title_error(),
+				description: m.book_detail_error_progress()
+			});
+		} finally {
+			// Drop the draft so the stored date (updated on success, unchanged on
+			// failure) becomes visible again. A newer change keeps its own draft.
+			const bookDrafts = dateDrafts[bookId];
+			if (bookDrafts && bookDrafts[field] === value) {
+				const nextBookDrafts = { ...bookDrafts };
+				delete nextBookDrafts[field];
+				dateDrafts = { ...dateDrafts, [bookId]: nextBookDrafts };
+			}
+		}
+	}
+
+	async function saveProgress(input: HTMLInputElement, patch: ProgressPatch, previous: string) {
+		try {
+			await updateBookProgress({ id: data.bookInfo.id, ...patch });
+			await refreshAll();
+		} catch (err) {
+			console.error('[progress] error', err);
+			input.value = previous;
+			toaster.error({
+				title: m.toast_title_error(),
+				description: m.book_detail_error_progress()
+			});
+		}
 	}
 
 	const boughtAtMonth = $derived(formatBoughtAtMonth(data.bookInfo.boughtAt));
@@ -55,7 +154,18 @@
 		success: m.book_detail_success_status(),
 		error: m.series_detail_error_bookstatus_wishlist(),
 		run: () => updateBookStatus({ id: bookStatusTarget.id, status: bookStatusValue }),
-		onSuccess: () => invalidateAll()
+		onSuccess: () => refreshAll()
+	});
+
+	const confirmUpdateBookReadStatus = createRemoteActionHandler({
+		success: m.series_detail_success_readstatus(),
+		error: m.series_detail_error_readstatus(),
+		run: () =>
+			updateBookReadStatus({
+				id: bookReadStatusTarget.id,
+				readStatus: bookReadStatusValue
+			}),
+		onSuccess: () => refreshAll()
 	});
 
 	function requestBookStatus(status: BookStatus) {
@@ -81,26 +191,19 @@
 	function cancelReadReset() {
 		pendingStatusReset = null;
 	}
-
-	const confirmUpdateBookReadStatus = createRemoteActionHandler({
-		success: m.series_detail_success_readstatus(),
-		error: m.series_detail_error_readstatus(),
-		run: () =>
-			updateBookReadStatus({ id: bookReadStatusTarget.id, readStatus: bookReadStatusValue }),
-		onSuccess: () => invalidateAll()
-	});
 </script>
 
-<main class="p-4">
+<main class="container p-4">
 	<div class="flex flex-col items-center gap-4">
 		<div class="flex w-full max-w-4xl items-center justify-between">
-			<a href={resolve(`/series/${data.seriesInfo.id}`)} class="btn preset-filled">
+			<a href={resolve(`series/${data.seriesInfo.id}`)} class="btn preset-filled">
 				{m.book_detail_back()}
 			</a>
+
 			<div class="grid grid-cols-2 gap-2">
 				{#if data.prevBookId}
 					<a
-						href={resolve(`/series/${data.seriesInfo.id}/${data.prevBookId}`)}
+						href={resolve(`series/${data.seriesInfo.id}/${data.prevBookId}`)}
 						class="btn justify-between preset-filled-surface-100-900"
 					>
 						<ChevronLeft class="size-4" />
@@ -112,7 +215,7 @@
 				{/if}
 				{#if data.nextBookId}
 					<a
-						href={resolve(`/series/${data.seriesInfo.id}/${data.nextBookId}`)}
+						href={resolve(`series/${data.seriesInfo.id}/${data.nextBookId}`)}
 						class="btn justify-between preset-filled-surface-100-900"
 					>
 						<ChevronRight class="size-4" />
@@ -144,13 +247,15 @@
 						<div class="flex flex-col">
 							<h1 class="text-2xl font-bold">{data.seriesInfo.title}</h1>
 							<p class="font-medium">
-								{m.series_entry_volume({ volumeNumber: data.bookInfo.volumeNumber })}
+								{m.series_entry_volume({
+									volumeNumber: data.bookInfo.volumeNumber
+								})}
 							</p>
 						</div>
 						<Menu
 							onSelect={(event) => {
 								if (event.value !== 'edit') return;
-								void goto(resolve(`/series/${data.seriesInfo.id}/${data.bookInfo.id}/update`));
+								void goto(resolve(`series/${data.seriesInfo.id}/${data.bookInfo.id}/update`));
 							}}
 						>
 							<Menu.Trigger class="btn preset-tonal btn-sm" aria-label={m.common_more_actions()}>
@@ -231,7 +336,6 @@
 							<div class="mt-1">
 								<Menu
 									onSelect={(event) => {
-										console.debug('[status-reset] read menu fired:', event.value);
 										bookReadStatusTarget.id = data.bookInfo.id;
 										bookReadStatusValue = event.value as ReadStatus;
 										confirmUpdateBookReadStatus();
@@ -294,7 +398,9 @@
 
 						<div>
 							<span class="text-surface-500-500 text-sm">{m.book_detail_seriesstatus_label()}</span>
-							<p class="font-medium">{getSeriesStatusText(data.seriesInfo.status)}</p>
+							<p class="font-medium">
+								{getSeriesStatusText(data.seriesInfo.status)}
+							</p>
 						</div>
 					</div>
 
@@ -308,25 +414,25 @@
 								</p>
 							</div>
 							<div>
-								<span class="text-surface-500-500 text-sm"
-									>{m.book_detail_original_price_label()}</span
-								>
+								<span class="text-surface-500-500 text-sm">
+									{m.book_detail_original_price_label()}
+								</span>
 								<p class="font-medium">
 									{formatPrice(data.bookInfo.originalPrice, data.bookInfo.currencyCode)}
 								</p>
 							</div>
 							{#if !data.bookOrder}
 								<div>
-									<span class="text-surface-500-500 text-sm"
-										>{m.book_detail_purchase_month_label()}</span
-									>
+									<span class="text-surface-500-500 text-sm">
+										{m.book_detail_purchase_month_label()}
+									</span>
 									<p class="font-medium">{boughtAtMonth ?? '—'}</p>
 								</div>
 							{:else}
 								<div>
 									<span class="text-surface-500-500 text-sm">{m.book_detail_order_label()}</span>
 									<a
-										href={resolve(`/orders/${data.bookOrder.id}`)}
+										href={resolve(`orders/${data.bookOrder.id}`)}
 										class="font-medium hover:underline"
 									>
 										{data.bookOrder.storeName}
@@ -339,9 +445,9 @@
 								</div>
 								{#if purchaseDateMismatch}
 									<div>
-										<span class="text-surface-500-500 text-sm"
-											>{m.book_detail_purchase_month_label()}</span
-										>
+										<span class="text-surface-500-500 text-sm">
+											{m.book_detail_purchase_month_label()}
+										</span>
 										<div class="flex items-center gap-2">
 											<p class="font-medium">{boughtAtMonth}</p>
 											<Tooltip>
@@ -367,6 +473,62 @@
 								{/if}
 							{/if}
 						</div>
+					</div>
+
+					<div class="border-t border-surface-200-800 pt-4">
+						<h2 class="mb-3 font-semibold">
+							{m.book_progress_section_title()}
+						</h2>
+						{#if data.bookInfo.status === 'Owned'}
+							<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+								<DatePickerField
+									label={m.form_book_cu_startedat_label()}
+									value={startedAt}
+									onValueChange={(value) => onDateChange('startedAt', value)}
+								/>
+								<DatePickerField
+									label={m.form_book_cu_completedat_label()}
+									value={completedAt}
+									onValueChange={(value) => onDateChange('completedAt', value)}
+								/>
+								<label class="label">
+									<span class="label-text">{m.form_book_cu_readcount_label()}</span>
+									<input
+										type="number"
+										min="0"
+										class="input"
+										value={data.bookInfo.readCount}
+										placeholder={m.form_book_cu_readcount_placeholder()}
+										onchange={(e) => onReadCountChange(e.currentTarget)}
+									/>
+								</label>
+							</div>
+						{:else}
+							<div class="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-3">
+								<div>
+									<span class="text-surface-500-500 text-sm">
+										{m.book_detail_startedat_label()}
+									</span>
+									<p class="font-medium">
+										{formatDay(data.bookInfo.startedAt)}
+									</p>
+								</div>
+								<div>
+									<span class="text-surface-500-500 text-sm">
+										{m.book_detail_completedat_label()}
+									</span>
+									<p class="font-medium">
+										{formatDay(data.bookInfo.completedAt)}
+									</p>
+								</div>
+								<div>
+									<span class="text-surface-500-500 text-sm">
+										{m.book_detail_readcount_label()}
+									</span>
+									<p class="font-medium">{data.bookInfo.readCount}</p>
+								</div>
+							</div>
+						{/if}
 					</div>
 				</div>
 			</div>

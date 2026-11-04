@@ -1,28 +1,25 @@
 <script lang="ts">
-	import { invalidateAll, goto } from '$app/navigation';
+	import { refreshAll, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-	import BookCover from '$lib/components/BookCover.svelte';
-	import { coverSrc } from '$lib/fileUrl';
+	import ConfirmDialog from '#lib/components/ui/ConfirmDialog.svelte';
+	import BookCover from '#lib/components/book/BookCover.svelte';
+	import { coverSrc } from '#lib/shared/file-url.js';
+	import BookStatusResetDialog from '#lib/components/book/BookStatusResetDialog.svelte';
+	import UpdateSeriesDialog from '#lib/components/series/UpdateSeriesDialog.svelte';
+	import { deleteBook, updateBookReadStatus, updateBookStatus } from '#lib/remote/books.remote.js';
+	import { deleteSeries, updateSeriesStatus } from '#lib/remote/series.remote.js';
+	import { getSeriesStatusText } from '#lib/components/series/series-labels.js';
+	import { createRemoteActionHandler } from '#lib/client/form-handlers.js';
 	import {
-		BookStatusResetDialog,
-		deleteBook,
-		updateBookReadStatus,
-		updateBookStatus
-	} from '$lib/components/forms/book';
-	import {
-		UpdateSeriesDialog,
-		deleteSeries,
-		updateSeriesStatus,
-		getSeriesStatusText
-	} from '$lib/components/forms/series';
-	import { createRemoteActionHandler } from '$lib/utils/formUtils';
-	import { getBookStatusText, getReadStatusText, needsReadReset } from '$lib/components/forms/book';
-	import { m } from '$lib/paraglide/messages';
-	import { persistedStorage } from '$lib/utils/persisted-storage.svelte';
-	import { book as bookValidation, series } from '$lib/validation';
-	import type { BookStatus, ReadStatus } from '$lib/validation/book';
-	import type { UpdateSeries } from '$lib/validation';
+		getBookStatusText,
+		getReadStatusText,
+		needsReadReset
+	} from '#lib/components/book/book-labels.js';
+	import { m } from '#lib/paraglide/messages.js';
+	import { persistedStorage } from '#lib/client/persisted-storage.svelte.js';
+	import { book as bookValidation, series } from '#lib/shared/validation/index.js';
+	import type { BookStatus, ReadStatus } from '#lib/shared/validation/book.js';
+	import type { UpdateSeries } from '#lib/shared/validation/index.js';
 	import {
 		BadgeCheck,
 		BookOpen,
@@ -38,9 +35,10 @@
 		ShoppingCart,
 		Trash2
 	} from '@lucide/svelte';
-	import { Menu, Portal, SegmentedControl } from '@skeletonlabs/skeleton-svelte';
+	import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { format } from 'date-fns';
 	import _ from 'lodash';
+	import ViewModeToggle from '#lib/components/ui/ViewModeToggle.svelte';
 
 	let { data } = $props();
 
@@ -57,20 +55,21 @@
 
 	const books = $derived(_.sortBy(data.seriesBooks, 'volumeNumber'));
 
-	const firstBook = $derived(books.at(0));
-
 	let seriesStatusValue = $derived(data.seriesInfo.status);
 	let bookStatusTarget = $state({ id: '' });
 	let bookStatusValue = $state(bookValidation.bookStatusEnum.options[0]);
 	let bookReadStatusTarget = $state({ id: '' });
 	let bookReadStatusValue = $state(bookValidation.readStatusEnum.options[0]);
-	let pendingStatusReset = $state<{ readStatus: ReadStatus; status: BookStatus } | null>(null);
+	let pendingStatusReset = $state<{
+		readStatus: ReadStatus;
+		status: BookStatus;
+	} | null>(null);
 
 	const confirmDeleteBook = createRemoteActionHandler({
 		success: m.series_detail_success_deletebook(),
 		error: m.series_detail_error_deletebook(),
 		run: () => deleteBook({ id: deletableBookId }),
-		onSuccess: () => invalidateAll()
+		onSuccess: () => refreshAll()
 	});
 
 	const confirmDeleteSeries = createRemoteActionHandler({
@@ -79,7 +78,7 @@
 		run: () => deleteSeries({ id: data.seriesInfo.id }),
 		onSuccess: async () => {
 			modalState.deleteSeries = false;
-			await goto(resolve('/series'));
+			await goto(resolve('series'));
 		}
 	});
 
@@ -102,14 +101,14 @@
 		success: m.series_detail_success_seriesstatus(),
 		error: m.series_detail_error_seriesstatus(),
 		run: () => updateSeriesStatus({ id: data.seriesInfo.id, status: seriesStatusValue }),
-		onSuccess: () => invalidateAll()
+		onSuccess: () => refreshAll()
 	});
 
 	const confirmUpdateBookStatus = createRemoteActionHandler({
 		success: m.series_detail_success_bookstatus(),
 		error: m.series_detail_error_bookstatus_wishlist(),
 		run: () => updateBookStatus({ id: bookStatusTarget.id, status: bookStatusValue }),
-		onSuccess: () => invalidateAll()
+		onSuccess: () => refreshAll()
 	});
 
 	function requestBookStatus(book: (typeof books)[number], status: BookStatus) {
@@ -138,12 +137,15 @@
 		success: m.series_detail_success_readstatus(),
 		error: m.series_detail_error_readstatus(),
 		run: () =>
-			updateBookReadStatus({ id: bookReadStatusTarget.id, readStatus: bookReadStatusValue }),
-		onSuccess: () => invalidateAll()
+			updateBookReadStatus({
+				id: bookReadStatusTarget.id,
+				readStatus: bookReadStatusValue
+			}),
+		onSuccess: () => refreshAll()
 	});
 
 	function openEditBook(book: (typeof books)[number]) {
-		void goto(resolve(`/series/${data.seriesInfo.id}/${book.id}/update`));
+		void goto(resolve(`series/${data.seriesInfo.id}/${book.id}/update`));
 	}
 
 	function openDeleteBook(book: (typeof books)[number]) {
@@ -228,7 +230,6 @@
 
 	<Menu
 		onSelect={(event) => {
-			console.debug('[status-reset] read menu fired:', event.value);
 			bookReadStatusTarget.id = book.id;
 			bookReadStatusValue = event.value as ReadStatus;
 			confirmUpdateBookReadStatus();
@@ -318,21 +319,23 @@
 
 {#snippet listItem(book: (typeof books)[number])}
 	<div class="flex items-center gap-2 rounded-base preset-tonal p-2">
-		<a href={resolve(`/series/${data.seriesInfo.id}/${book.id}`)} class="shrink-0 hover:opacity-80">
+		<a href={resolve(`series/${data.seriesInfo.id}/${book.id}`)} class="shrink-0 hover:opacity-80">
 			<BookCover
 				src={coverSrc(book)}
-				alt={m.series_detail_cover_alt_volume({ volumeNumber: book.volumeNumber })}
+				alt={m.series_detail_cover_alt_volume({
+					volumeNumber: book.volumeNumber
+				})}
 				imgClass="h-12 w-9 rounded object-cover"
 				fallbackClass="h-12 w-9 rounded"
 			/>
 		</a>
 		<div class="min-w-0 flex-1">
-			<span class="font-medium whitespace-nowrap"
-				>{m.series_entry_volume({ volumeNumber: book.volumeNumber })}</span
-			>
-			{#if book.isbn}<span class="text-surface-500-500 hidden text-sm sm:inline"
-					>{m.series_detail_isbn({ isbn: book.isbn })}</span
-				>{/if}
+			<span class="font-medium whitespace-nowrap">
+				{m.series_entry_volume({ volumeNumber: book.volumeNumber })}
+			</span>
+			{#if book.isbn}<span class="text-surface-500-500 hidden text-sm sm:inline">
+					{m.series_detail_isbn({ isbn: book.isbn })}
+				</span>{/if}
 		</div>
 		<div class="flex shrink-0 items-center gap-2">
 			{@render statusDropdowns(book, false)}
@@ -342,163 +345,142 @@
 {/snippet}
 
 {#snippet gridItem(book: (typeof books)[number])}
-	<div class="flex flex-col gap-2 rounded-base preset-tonal p-2">
-		<a href={resolve(`/series/${book.seriesId}/${book.id}`)} class="block">
+	<div
+		class={[
+			'group relative rounded-base bg-transparent p-2 transition-all duration-200',
+			'ease-[cubic-bezier(0.6,0,0.3,2)] hover:z-20 hover:scale-125 hover:rotate-5'
+		]}
+	>
+		<div class="aura aura-dual aura-light" aria-hidden="true"></div>
+		<a
+			href={resolve(`series/${book.seriesId}/${book.id}`)}
+			class="relative z-10 block transition-all duration-150"
+		>
 			<BookCover
 				src={coverSrc(book)}
-				alt={m.series_detail_cover_alt_volume({ volumeNumber: book.volumeNumber })}
+				alt={m.series_detail_cover_alt_volume({
+					volumeNumber: book.volumeNumber
+				})}
 				imgClass="aspect-2/3 w-full rounded object-cover shadow-md"
 				fallbackClass="aspect-2/3 w-full rounded shadow-md"
 			/>
+			<div
+				class="absolute top-0 left-0 hidden h-full w-full flex-col items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:flex group-hover:opacity-100"
+			>
+				<span class="text-2xl font-bold">
+					{m.series_entry_volume({ volumeNumber: book.volumeNumber })}
+				</span>
+			</div>
 		</a>
-		<span class="text-center font-medium"
-			>{m.series_entry_volume({ volumeNumber: book.volumeNumber })}</span
-		>
-		{@render statusDropdowns(book, true)}
-		<div class="flex">
-			{@render bookMenuItems(book, 'w-full')}
-		</div>
 	</div>
 {/snippet}
 
-<main class="mx-auto max-w-6xl p-2">
-	<div class="flex flex-col items-center gap-2">
-		<div class="flex w-full gap-2">
-			<a
-				href={resolve(`/series/${data.seriesInfo.id}/books/create`)}
-				class="btn flex w-full items-center preset-filled btn-sm"
-			>
-				<Plus class="size-4" />
-				{m.series_detail_addbook()}
-			</a>
-			<a
-				href={resolve(`/series/${data.seriesInfo.id}/books/create/batch`)}
-				class="btn hidden w-full items-center preset-tonal btn-sm lg:flex"
-			>
-				<ListPlus class="size-4" />
-				{m.series_detail_addbooks()}
-			</a>
-		</div>
-
-		<div
-			class="grid w-full grid-cols-1 items-center gap-4 sm:grid-cols-[1fr_3fr] sm:items-start sm:gap-6"
+<main class="container flex flex-col gap-2">
+	<div class="flex w-full flex-col gap-2 md:flex-row md:items-center">
+		<a
+			href={resolve(`series/${data.seriesInfo.id}/books/create`)}
+			class="btn flex w-full flex-1 items-center preset-filled md:w-fit"
 		>
-			<BookCover
-				src={firstBook ? coverSrc(firstBook) : null}
-				alt={m.series_cover_alt({ title: data.seriesInfo.title })}
-				imgClass="mx-auto aspect-2/3 w-auto rounded-base object-cover max-sm:aspect-square max-sm:max-h-72"
-				fallbackClass="mx-auto aspect-2/3 w-full rounded-base max-sm:aspect-square max-sm:max-h-72"
+			<Plus class="size-4" />
+			{m.series_detail_addbook()}
+		</a>
+		<a
+			href={resolve(`series/${data.seriesInfo.id}/books/create/batch`)}
+			class="btn flex w-full flex-1 items-center preset-tonal md:w-fit"
+		>
+			<ListPlus class="size-4" />
+			{m.series_detail_addbooks()}
+		</a>
+		<div class="ml-auto flex w-fit items-center gap-2">
+			<ViewModeToggle
+				bind:value={viewMode.value}
+				viewModes={[
+					{ value: 'grid', icon: LayoutGrid },
+					{ value: 'list', icon: List }
+				]}
 			/>
-			<div
-				class="flex h-full w-full flex-col items-center gap-2 text-center sm:items-start sm:text-left"
-			>
-				<div
-					class="flex w-full flex-col items-center gap-2 sm:flex-row sm:items-start sm:justify-between"
-				>
-					<h1 class="text-3xl font-bold">{data.seriesInfo.title}</h1>
-					<Menu onSelect={(event) => handleSeriesMenuSelect(event.value)}>
-						<Menu.Trigger class="btn preset-tonal btn-sm" aria-label={m.common_more_actions()}>
-							<Ellipsis class="size-4" />
-						</Menu.Trigger>
-						<Portal>
-							<Menu.Positioner>
-								<Menu.Content
-									class="z-50 flex w-48 flex-col gap-1 card border border-surface-200-800 bg-surface-50-950 p-2 shadow-xl"
-								>
-									<Menu.Item
-										value="edit"
-										class="flex cursor-pointer items-center gap-2 rounded-base p-2 hover:preset-filled-primary-50-950"
-									>
-										<Pencil class="size-4" />
-										<span>{m.common_edit()}</span>
-									</Menu.Item>
-									<Menu.Item
-										value="delete"
-										class="flex cursor-pointer items-center gap-2 rounded-base p-2 hover:preset-filled-primary-50-950"
-									>
-										<Trash2 class="size-4" />
-										<span>{m.common_delete()}</span>
-									</Menu.Item>
-								</Menu.Content>
-							</Menu.Positioner>
-						</Portal>
-					</Menu>
-				</div>
-				<h2 class="text-2xl font-medium text-surface-800-200">
-					{data.seriesInfo.author || m.series_detail_unknown_author()}
-				</h2>
-
-				<Menu
-					onSelect={(event) => {
-						seriesStatusValue = event.value as typeof seriesStatusValue;
-						confirmUpdateSeriesStatus();
-					}}
-				>
-					<Menu.Trigger class="btn w-full preset-tonal sm:w-48"
-						>{getSeriesStatusText(data.seriesInfo.status)}</Menu.Trigger
-					>
-					<Portal>
-						<Menu.Positioner>
-							<Menu.Content
-								class="mt-2 flex w-48 flex-col gap-2 rounded-base border border-surface-200-800 preset-filled-surface-50-950 p-2 shadow-xl"
+			<Menu onSelect={(event) => handleSeriesMenuSelect(event.value)}>
+				<Menu.Trigger class="btn preset-tonal" aria-label={m.common_more_actions()}>
+					<Ellipsis class="size-4" />
+				</Menu.Trigger>
+				<Portal>
+					<Menu.Positioner>
+						<Menu.Content
+							class="z-50 flex w-48 flex-col gap-1 card border border-surface-200-800 bg-surface-50-950 p-2 shadow-xl"
+						>
+							<Menu.Item
+								value="edit"
+								class="flex cursor-pointer items-center gap-2 rounded-base p-2 hover:preset-filled-primary-50-950"
 							>
-								{#each series.seriesStatusEnum.options as status (status)}
-									<Menu.Item
-										value={status}
-										class={[
-											'cursor-pointer rounded-base p-2 hover:preset-filled-primary-100-900',
-											status === data.seriesInfo.status && 'preset-filled-primary-100-900'
-										]}
-									>
-										{getSeriesStatusText(status)}
-									</Menu.Item>
-								{/each}
-							</Menu.Content>
-						</Menu.Positioner>
-					</Portal>
-				</Menu>
-			</div>
+								<Pencil class="size-4" />
+								<span>{m.common_edit()}</span>
+							</Menu.Item>
+							<Menu.Item
+								value="delete"
+								class="flex cursor-pointer items-center gap-2 rounded-base p-2 hover:preset-filled-primary-50-950"
+							>
+								<Trash2 class="size-4" />
+								<span>{m.common_delete()}</span>
+							</Menu.Item>
+						</Menu.Content>
+					</Menu.Positioner>
+				</Portal>
+			</Menu>
 		</div>
+	</div>
 
-		<hr class="hr" />
-
-		<div class="flex w-full items-center justify-between gap-2">
-			<h2 class="text-xl font-bold">{m.series_detail_volumes()}</h2>
-			<SegmentedControl
-				value={viewMode.value}
-				onValueChange={(details) => (viewMode.value = (details.value as 'grid' | 'list') ?? 'grid')}
-			>
-				<SegmentedControl.Control>
-					<SegmentedControl.Indicator />
-					<SegmentedControl.Item
-						value="grid"
-						title={m.series_detail_grid_view()}
-						aria-label={m.series_detail_grid_view()}
-					>
-						<SegmentedControl.ItemText><LayoutGrid class="size-4" /></SegmentedControl.ItemText>
-						<SegmentedControl.ItemHiddenInput />
-					</SegmentedControl.Item>
-					<SegmentedControl.Item
-						value="list"
-						title={m.series_detail_list_view()}
-						aria-label={m.series_detail_list_view()}
-					>
-						<SegmentedControl.ItemText><List class="size-4" /></SegmentedControl.ItemText>
-						<SegmentedControl.ItemHiddenInput />
-					</SegmentedControl.Item>
-				</SegmentedControl.Control>
-			</SegmentedControl>
+	<div class="flex items-center justify-between gap-2">
+		<div class="min-w-0">
+			<h1 class="text-2xl font-bold wrap-break-word lg:text-3xl">
+				{data.seriesInfo.title}
+			</h1>
+			<h2 class="text-lg font-medium text-surface-800-200 lg:text-xl">
+				{data.seriesInfo.author || m.series_detail_unknown_author()}
+			</h2>
 		</div>
-
-		<div
-			class={viewMode.value === 'grid'
-				? 'grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'
-				: 'flex w-full flex-col gap-2'}
+		<Menu
+			onSelect={(event) => {
+				seriesStatusValue = event.value as typeof seriesStatusValue;
+				confirmUpdateSeriesStatus();
+			}}
 		>
-			{#each books as book (book.id)}
-				{@render (viewMode.value === 'grid' ? gridItem : listItem)(book)}
-			{/each}
-		</div>
+			<Menu.Trigger class="btn shrink-0 preset-tonal btn-sm">
+				{getSeriesStatusText(data.seriesInfo.status)}
+			</Menu.Trigger>
+			<Portal>
+				<Menu.Positioner>
+					<Menu.Content
+						class="z-50 mt-2 flex w-48 flex-col gap-2 rounded-base border border-surface-200-800 preset-filled-surface-50-950 p-2 shadow-xl"
+					>
+						{#each series.seriesStatusEnum.options as status (status)}
+							<Menu.Item
+								value={status}
+								class={[
+									'cursor-pointer rounded-base p-2 hover:preset-filled-primary-100-900',
+									status === data.seriesInfo.status && 'preset-filled-primary-100-900'
+								]}
+							>
+								{getSeriesStatusText(status)}
+							</Menu.Item>
+						{/each}
+					</Menu.Content>
+				</Menu.Positioner>
+			</Portal>
+		</Menu>
+	</div>
+
+	<hr class="hr" />
+
+	<div
+		class={[
+			viewMode.value === 'grid'
+				? 'grid w-full grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-2'
+				: 'grid w-full grid-cols-1 gap-2 xl:grid-cols-2 2xl:grid-cols-3'
+		]}
+	>
+		{#each books as book (book.id)}
+			{@render (viewMode.value === 'grid' ? gridItem : listItem)(book)}
+		{/each}
 	</div>
 </main>
 

@@ -3,20 +3,24 @@
 	import { goto } from '$app/navigation';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { Steps } from '@skeletonlabs/skeleton-svelte';
-	import { book } from '$lib/validation';
-	import type { BookStatus, CreateBook } from '$lib/validation/book';
-	import { createBook, getBookStatusText, getReadStatusText } from '$lib/components/forms/book';
-	import { createEnhanceHandler } from '$lib/utils/formUtils';
-	import { m } from '$lib/paraglide/messages';
-	import MonthInput from '$lib/components/MonthInput.svelte';
-	import CurrencyCodeInput from '$lib/components/CurrencyCodeInput.svelte';
-	import FileAttachment from '$lib/components/forms/FileAttachment.svelte';
+	import { book } from '#lib/shared/validation/index.js';
+	import type { BookStatus, CreateBook } from '#lib/shared/validation/book.js';
+	import { createBook } from '#lib/remote/books.remote.js';
+	import { getBookStatusText, getReadStatusText } from '#lib/components/book/book-labels.js';
+	import { createEnhanceHandler } from '#lib/client/form-handlers.js';
+	import { m } from '#lib/paraglide/messages.js';
+	import MonthInput from '#lib/components/form/MonthInput.svelte';
+	import CurrencyCodeInput from '#lib/components/form/CurrencyCodeInput.svelte';
+	import FileAttachment from '#lib/components/form/FileAttachment.svelte';
 
 	let { data } = $props();
 
 	let step = $state(0);
 	let boughtAtValue = $state('');
 	let coverFileId = $state('');
+	let coverImportUrl = $state('');
+	let coverImportBusy = $state(false);
+	let coverImportError = $state('');
 	let selectedStatus = $state<BookStatus>(book.bookStatusEnum.options[0]);
 
 	$effect(() => {
@@ -50,12 +54,48 @@
 		isbn: 0,
 		status: 0,
 		readStatus: 0,
+		startedAt: 0,
+		completedAt: 0,
+		readCount: 0,
 		coverFileId: 1,
 		paidPrice: 2,
 		originalPrice: 2,
 		currencyCode: 2,
 		boughtAt: 2
 	};
+
+	async function importCoverFromUrl() {
+		const url = coverImportUrl.trim();
+		if (!url || coverImportBusy) return;
+		coverImportBusy = true;
+		coverImportError = '';
+		try {
+			const res = await fetch('/api/files/import', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ kind: 'cover', url })
+			});
+
+			const body = (await res.json().catch(() => null)) as {
+				id?: unknown;
+				message?: unknown;
+			} | null;
+
+			if (!res.ok || typeof body?.id !== 'string') {
+				coverImportError =
+					typeof body?.message === 'string' && body.message
+						? body.message
+						: m.form_file_upload_error_import();
+			} else {
+				coverImportUrl = '';
+				coverFileId = body.id;
+			}
+		} catch {
+			coverImportError = m.form_file_upload_error_import();
+		} finally {
+			coverImportBusy = false;
+		}
+	}
 
 	const handleEnhance = createEnhanceHandler<CreateBook, void>({
 		success: m.dialog_book_add_success(),
@@ -69,15 +109,15 @@
 			}
 		},
 		onSuccess: () => {
-			void goto(resolve(`/series/${data.seriesInfo.id}`));
+			void goto(resolve(`series/${data.seriesInfo.id}`));
 		}
 	});
 </script>
 
-<main class="mx-auto max-w-4xl p-4">
-	<div class="mb-4 flex items-center gap-3">
+<main class="container flex flex-col p-2">
+	<div class="mb-2 flex items-center gap-2">
 		<a
-			href={resolve(`/series/${data.seriesInfo.id}`)}
+			href={resolve(`series/${data.seriesInfo.id}`)}
 			class="btn preset-tonal btn-sm"
 			aria-label={m.common_cancel()}
 			title={m.common_cancel()}
@@ -143,7 +183,7 @@
 					<label class="label">
 						<span class="label-text">{m.form_book_cu_status_label()}</span>
 						<select
-							class="select leading-6"
+							class="select"
 							{...createBook.fields.status.as('select')}
 							onchange={(e) => (selectedStatus = e.currentTarget.value as BookStatus)}
 						>
@@ -158,14 +198,45 @@
 
 					<label class="label">
 						<span class="label-text">{m.form_book_cu_readstatus_label()}</span>
-						<select class="select leading-6" {...createBook.fields.readStatus.as('select')}>
+						<select class="select" {...createBook.fields.readStatus.as('select')}>
 							{#each book.readStatusEnum.options as opt (opt)}
-								<option value={opt} disabled={selectedStatus !== 'Owned' && opt !== 'Not Read'}
-									>{getReadStatusText(opt)}</option
-								>
+								<option value={opt} disabled={selectedStatus !== 'Owned' && opt !== 'Not Read'}>
+									{getReadStatusText(opt)}
+								</option>
 							{/each}
 						</select>
 						{#each createBook.fields.readStatus.issues() as issue (issue.message)}
+							<p class="text-sm text-error-500">{issue.message}</p>
+						{/each}
+					</label>
+				</div>
+
+				<h2 class="mt-4 mb-2 font-semibold">{m.book_progress_section_title()}</h2>
+				<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+					<label class="label">
+						<span class="label-text">{m.form_book_cu_startedat_label()}</span>
+						<input class="input" {...createBook.fields.startedAt.as('date')} />
+						{#each createBook.fields.startedAt.issues() as issue (issue.message)}
+							<p class="text-sm text-error-500">{issue.message}</p>
+						{/each}
+					</label>
+
+					<label class="label">
+						<span class="label-text">{m.form_book_cu_completedat_label()}</span>
+						<input class="input" {...createBook.fields.completedAt.as('date')} />
+						{#each createBook.fields.completedAt.issues() as issue (issue.message)}
+							<p class="text-sm text-error-500">{issue.message}</p>
+						{/each}
+					</label>
+
+					<label class="label">
+						<span class="label-text">{m.form_book_cu_readcount_label()}</span>
+						<input
+							class="input"
+							{...createBook.fields.readCount.as('number')}
+							placeholder={m.form_book_cu_readcount_placeholder()}
+						/>
+						{#each createBook.fields.readCount.issues() as issue (issue.message)}
 							<p class="text-sm text-error-500">{issue.message}</p>
 						{/each}
 					</label>
@@ -179,6 +250,29 @@
 					{#each createBook.fields.coverFileId.issues() as issue (issue.message)}
 						<p class="text-sm text-error-500">{issue.message}</p>
 					{/each}
+					<div class="flex items-center gap-2">
+						<span class="text-xs opacity-70">{m.form_file_upload_or_url()}</span>
+					</div>
+					<div class="flex gap-2">
+						<input
+							class="input-sm input"
+							type="url"
+							bind:value={coverImportUrl}
+							placeholder={m.form_file_upload_url_placeholder()}
+							disabled={coverImportBusy}
+						/>
+						<button
+							type="button"
+							class="btn preset-tonal-secondary btn-sm"
+							onclick={importCoverFromUrl}
+							disabled={coverImportBusy || !coverImportUrl.trim()}
+						>
+							{m.form_file_upload_fetch()}
+						</button>
+					</div>
+					{#if coverImportError}
+						<p class="text-sm text-error-500" role="alert">{coverImportError}</p>
+					{/if}
 				</div>
 			</Steps.Content>
 
@@ -288,6 +382,18 @@
 						<div>
 							<dt class="text-sm text-surface-500">{m.form_book_cu_boughtat_label()}</dt>
 							<dd class="font-medium">{boughtAtValue || '—'}</dd>
+						</div>
+						<div>
+							<dt class="text-sm text-surface-500">{m.form_book_cu_startedat_label()}</dt>
+							<dd class="font-medium">{createBook.fields.startedAt.value() || '—'}</dd>
+						</div>
+						<div>
+							<dt class="text-sm text-surface-500">{m.form_book_cu_completedat_label()}</dt>
+							<dd class="font-medium">{createBook.fields.completedAt.value() || '—'}</dd>
+						</div>
+						<div>
+							<dt class="text-sm text-surface-500">{m.form_book_cu_readcount_label()}</dt>
+							<dd class="font-medium">{createBook.fields.readCount.value() ?? '—'}</dd>
 						</div>
 						<div>
 							<dt class="text-sm text-surface-500">{m.form_book_cu_paid_label()}</dt>

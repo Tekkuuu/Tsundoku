@@ -10,7 +10,9 @@ import {
 	unique,
 	uniqueIndex,
 	check,
-	pgEnum
+	pgEnum,
+	smallint,
+	date
 } from 'drizzle-orm/pg-core';
 import { user } from './auth.schema';
 
@@ -57,7 +59,9 @@ export const series = pgTable(
 			table.userId,
 			sql`lower(btrim(${table.title}))`,
 			sql`lower(btrim(coalesce(${table.author}, '')))`
-		)
+		),
+		index('series_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
+		index('series_author_trgm_idx').using('gin', sql`${table.author} gin_trgm_ops`)
 	]
 );
 
@@ -79,7 +83,10 @@ export const book = pgTable(
 		currencyCode: text('currency_code'),
 		paidPrice: numeric('paid_price', { precision: 10, scale: 2 }),
 		originalPrice: numeric('original_price', { precision: 10, scale: 2 }),
-		boughtAt: timestamp('bought_at')
+		boughtAt: timestamp('bought_at'),
+		startedAt: date('started_at', { mode: 'string' }),
+		completedAt: date('completed_at', { mode: 'string' }),
+		readCount: smallint('read_count').notNull().default(0)
 	},
 	(table) => [
 		index('book_userId_idx').on(table.userId),
@@ -89,7 +96,33 @@ export const book = pgTable(
 		check(
 			'book_read_status_owned_check',
 			sql`${table.status} = 'Owned' OR ${table.readStatus} = 'Not Read'`
+		),
+		check('read_count_is_nonnegative_check', sql`${table.readCount} >= 0`),
+		check(
+			'started_at_before_completed_at',
+			sql`${table.completedAt} IS NULL OR ${table.startedAt} <= ${table.completedAt}`
 		)
+	]
+);
+
+export const readingPlanItem = pgTable(
+	'reading_plan_item',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		bookId: uuid('book_id')
+			.notNull()
+			.references(() => book.id, { onDelete: 'cascade' }),
+		plannedDate: date('planned_date', { mode: 'string' }).notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => [
+		index('readingPlanItem_userId_idx').on(table.userId),
+		index('readingPlanItem_bookId_idx').on(table.bookId),
+		index('readingPlanItem_user_date_idx').on(table.userId, table.plannedDate),
+		unique('unique_user_planned_book').on(table.userId, table.bookId)
 	]
 );
 
@@ -104,14 +137,17 @@ export const order = pgTable(
 		storeName: text('store_name').notNull(),
 		orderDate: timestamp('order_date').defaultNow().notNull(),
 		currencyCode: text('currency_code').notNull(),
-		receiptUrl: text('receipt_url'),
 		receiptFileId: uuid('receipt_file_id').references(() => file.id, { onDelete: 'set null' }),
 		note: text('note')
 	},
 	(table) => [
 		index('order_userId_idx').on(table.userId),
+		index('order_userId_orderDate_idx').on(table.userId, table.orderDate.desc(), table.id.desc()),
 		index('order_storeName_idx').on(table.storeName),
-		index('order_orderNumber_idx').on(table.orderNumber)
+		index('order_orderNumber_idx').on(table.orderNumber),
+		index('order_orderNumber_trgm_idx').using('gin', sql`${table.orderNumber} gin_trgm_ops`),
+		index('order_storeName_trgm_idx').using('gin', sql`${table.storeName} gin_trgm_ops`),
+		index('order_note_trgm_idx').using('gin', sql`${table.note} gin_trgm_ops`)
 	]
 );
 
@@ -169,11 +205,17 @@ export const fileRelations = relations(file, ({ one }) => ({
 	user: one(user, { fields: [file.userId], references: [user.id] })
 }));
 
-export const bookRelations = relations(book, ({ one }) => ({
+export const bookRelations = relations(book, ({ one, many }) => ({
 	user: one(user, { fields: [book.userId], references: [user.id] }),
 	series: one(series, { fields: [book.seriesId], references: [series.id] }),
 	coverFile: one(file, { fields: [book.coverFileId], references: [file.id] }),
-	orderItem: one(orderItem)
+	orderItem: one(orderItem),
+	planItems: many(readingPlanItem)
+}));
+
+export const readingPlanItemRelations = relations(readingPlanItem, ({ one }) => ({
+	user: one(user, { fields: [readingPlanItem.userId], references: [user.id] }),
+	book: one(book, { fields: [readingPlanItem.bookId], references: [book.id] })
 }));
 
 export const orderRelations = relations(order, ({ one, many }) => ({
