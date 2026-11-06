@@ -188,6 +188,20 @@
 	"dialog_book_add_failure": "Nie udało się dodać tomu",
 	"dialog_book_add_error": "Wystąpił błąd podczas dodawania tomu",
 	"series_detail_addbooks": "Dodaj wiele tomów",
+	"series_detail_missing_volumes_title": "Brakujące tomy",
+	"series_detail_missing_volumes_description": "Tych numerów tomów nie ma w jeszcze w kolekcji przez co występuje przesko w numerach tomów.",
+	"series_detail_missing_volumes_trigger": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Pokaż {count} brakujący tom",
+				"countPlural=few": "Pokaż {count} brakujące tomy",
+				"countPlural=many": "Pokaż {count} brakujących tomów",
+				"countPlural=*": "Pokaż {count} brakujących tomów"
+			}
+		}
+	],
 	"dialog_book_batch_title": "Dodawanie wielu tomów",
 	"dialog_book_batch_submit": "Dodaj tomy",
 	"dialog_book_batch_success": "Tomy zostały dodane",
@@ -408,6 +422,7 @@
 	"common_cancel": "Anuluj",
 	"common_ok": "OK",
 	"common_more_actions": "Więcej akcji",
+	"common_close": "Zamknij",
 	"common_clear_all": "Wyczyść wszystko",
 	"common_back": "Wstecz",
 	"common_next": "Dalej",

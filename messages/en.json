@@ -188,6 +188,18 @@
 	"dialog_book_add_failure": "Failed to add volume",
 	"dialog_book_add_error": "An error occurred while adding volume",
 	"series_detail_addbooks": "Add multiple volumes",
+	"series_detail_missing_volumes_title": "Missing volumes",
+	"series_detail_missing_volumes_description": "These volume numbers are not in this series yet and they are cousing a gap between volumes.",
+	"series_detail_missing_volumes_trigger": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["countPlural"],
+			"match": {
+				"countPlural=one": "Show {count} missing volume",
+				"countPlural=*": "Show {count} missing volumes"
+			}
+		}
+	],
 	"dialog_book_batch_title": "Batch add volumes",
 	"dialog_book_batch_submit": "Add volumes",
 	"dialog_book_batch_success": "Volumes added successfully",
@@ -406,6 +418,7 @@
 	"common_cancel": "Cancel",
 	"common_ok": "OK",
 	"common_more_actions": "More actions",
+	"common_close": "Close",
 	"common_clear_all": "Clear All",
 	"common_back": "Back",
 	"common_next": "Next",

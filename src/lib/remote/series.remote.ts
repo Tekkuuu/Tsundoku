@@ -15,6 +15,7 @@ import {
 import { z } from 'zod';
 import { similarity, trgmMatch, wordSimilarity } from '#lib/server/db/trgm.js';
 import { getSearchTermValue, tokenizeSearchQuery } from '#lib/shared/search.js';
+import { findMissingVolumeNumbers } from '#lib/shared/series/missing-volumes.js';
 
 /**
  * @param title - Series title.
@@ -307,6 +308,30 @@ export const getSeries = query(
 		return {
 			seriesEntries,
 			total
+		};
+	}
+);
+
+export const getMissingSeriesVolumes = query(
+	z.object({
+		seriesId: z.uuidv4()
+	}),
+	async (params) => {
+		const { locals } = getRequestEvent();
+
+		if (!locals.user) {
+			logger.warn('Unauthorized series missing volumes fetch attempt');
+			error(401, 'Unauthorized');
+		}
+
+		const volumes = await db
+			.select({ volumeNumber: book.volumeNumber })
+			.from(book)
+			.where(and(eq(book.userId, locals.user.id), eq(book.seriesId, params.seriesId)))
+			.orderBy(asc(book.volumeNumber));
+
+		return {
+			missingVolumes: findMissingVolumeNumbers(volumes.map((volume) => volume.volumeNumber))
 		};
 	}
 );

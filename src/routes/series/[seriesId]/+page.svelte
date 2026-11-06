@@ -7,7 +7,11 @@
 	import BookStatusResetDialog from '#lib/components/book/BookStatusResetDialog.svelte';
 	import UpdateSeriesDialog from '#lib/components/series/UpdateSeriesDialog.svelte';
 	import { deleteBook, updateBookReadStatus, updateBookStatus } from '#lib/remote/books.remote.js';
-	import { deleteSeries, updateSeriesStatus } from '#lib/remote/series.remote.js';
+	import {
+		deleteSeries,
+		updateSeriesStatus,
+		getMissingSeriesVolumes
+	} from '#lib/remote/series.remote.js';
 	import { getSeriesStatusText } from '#lib/components/series/series-labels.js';
 	import { createRemoteActionHandler } from '#lib/client/form-handlers.js';
 	import {
@@ -33,9 +37,11 @@
 		Pencil,
 		Plus,
 		ShoppingCart,
-		Trash2
+		Trash2,
+		CircleExclamationPoint,
+		X
 	} from '@lucide/svelte';
-	import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
+	import { Menu, Popover, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { format } from 'date-fns';
 	import _ from 'lodash';
 	import ViewModeToggle from '#lib/components/ui/ViewModeToggle.svelte';
@@ -54,6 +60,7 @@
 	let deletableBookId = $state('');
 
 	const books = $derived(_.sortBy(data.seriesBooks, 'volumeNumber'));
+	const missingVolumesQuery = $derived(getMissingSeriesVolumes({ seriesId: data.seriesInfo.id }));
 
 	let seriesStatusValue = $derived(data.seriesInfo.status);
 	let bookStatusTarget = $state({ id: '' });
@@ -438,35 +445,91 @@
 				{data.seriesInfo.author || m.series_detail_unknown_author()}
 			</h2>
 		</div>
-		<Menu
-			onSelect={(event) => {
-				seriesStatusValue = event.value as typeof seriesStatusValue;
-				confirmUpdateSeriesStatus();
-			}}
-		>
-			<Menu.Trigger class="btn shrink-0 preset-tonal btn-sm">
-				{getSeriesStatusText(data.seriesInfo.status)}
-			</Menu.Trigger>
-			<Portal>
-				<Menu.Positioner>
-					<Menu.Content
-						class="z-50 mt-2 flex w-48 flex-col gap-2 rounded-base border border-surface-200-800 preset-filled-surface-50-950 p-2 shadow-xl"
-					>
-						{#each series.seriesStatusEnum.options as status (status)}
-							<Menu.Item
-								value={status}
-								class={[
-									'cursor-pointer rounded-base p-2 hover:preset-filled-primary-100-900',
-									status === data.seriesInfo.status && 'preset-filled-primary-100-900'
-								]}
-							>
-								{getSeriesStatusText(status)}
-							</Menu.Item>
-						{/each}
-					</Menu.Content>
-				</Menu.Positioner>
-			</Portal>
-		</Menu>
+		<div class="flex items-center gap-2">
+			<Menu
+				onSelect={(event) => {
+					seriesStatusValue = event.value as typeof seriesStatusValue;
+					confirmUpdateSeriesStatus();
+				}}
+			>
+				<Menu.Trigger class="btn shrink-0 preset-tonal">
+					{getSeriesStatusText(data.seriesInfo.status)}
+				</Menu.Trigger>
+				<Portal>
+					<Menu.Positioner>
+						<Menu.Content
+							class="z-50 mt-2 flex w-48 flex-col gap-2 rounded-base border border-surface-200-800 preset-filled-surface-50-950 p-2 shadow-xl"
+						>
+							{#each series.seriesStatusEnum.options as status (status)}
+								<Menu.Item
+									value={status}
+									class={[
+										'cursor-pointer rounded-base p-2 hover:preset-filled-primary-100-900',
+										status === data.seriesInfo.status && 'preset-filled-primary-100-900'
+									]}
+								>
+									{getSeriesStatusText(status)}
+								</Menu.Item>
+							{/each}
+						</Menu.Content>
+					</Menu.Positioner>
+				</Portal>
+			</Menu>
+			{#await missingVolumesQuery then res}
+				{#if res.missingVolumes.length > 0}
+					<Popover>
+						<Popover.Trigger
+							class="btn shrink-0 preset-filled-error-500"
+							aria-label={m.series_detail_missing_volumes_trigger({
+								count: res.missingVolumes.length
+							})}
+							title={m.series_detail_missing_volumes_trigger({
+								count: res.missingVolumes.length
+							})}
+						>
+							<CircleExclamationPoint class="size-4" />
+							<span class="tabular-nums">{res.missingVolumes.length}</span>
+						</Popover.Trigger>
+						<Portal>
+							<Popover.Positioner>
+								<Popover.Content
+									class="z-50 w-72 max-w-[calc(100vw-2rem)] card bg-surface-200-800 p-4 shadow-xl"
+								>
+									<div class="flex items-start justify-between gap-4">
+										<div class="flex items-center gap-2">
+											<Popover.Title class="text-base font-semibold">
+												{m.series_detail_missing_volumes_title()}
+											</Popover.Title>
+										</div>
+										<Popover.CloseTrigger
+											class="-mt-1 -mr-1 btn-icon hover:preset-tonal"
+											aria-label={m.common_close()}
+										>
+											<X class="size-4" />
+										</Popover.CloseTrigger>
+									</div>
+									<Popover.Description class="mt-3 text-sm text-surface-600-400">
+										{m.series_detail_missing_volumes_description()}
+									</Popover.Description>
+									<div class="mt-3 flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
+										{#each res.missingVolumes as volumeNumber (volumeNumber)}
+											<span class="badge preset-filled-error-500 tabular-nums">
+												{volumeNumber}
+											</span>
+										{/each}
+									</div>
+									<Popover.Arrow
+										class="[--arrow-background:var(--color-surface-200-800)] [--arrow-size:--spacing(2)]"
+									>
+										<Popover.ArrowTip />
+									</Popover.Arrow>
+								</Popover.Content>
+							</Popover.Positioner>
+						</Portal>
+					</Popover>
+				{/if}
+			{/await}
+		</div>
 	</div>
 
 	<hr class="hr" />
