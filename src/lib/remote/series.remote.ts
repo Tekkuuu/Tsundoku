@@ -335,3 +335,55 @@ export const getMissingSeriesVolumes = query(
 		};
 	}
 );
+
+export const getAllMissingSeriesVolumes = query(async () => {
+	const { locals } = getRequestEvent();
+
+	if (!locals.user) {
+		logger.warn('Unauthorized all series missing volumes fetch attempt');
+		error(401, 'Unauthorized');
+	}
+
+	const volumes = await db
+		.select({
+			seriesId: book.seriesId,
+			coverFileId: book.coverFileId,
+			seriesTitle: series.title,
+			volumeNumber: book.volumeNumber
+		})
+		.from(book)
+		.innerJoin(series, eq(series.id, book.seriesId))
+		.where(eq(book.userId, locals.user.id))
+		.orderBy(asc(book.seriesId), asc(book.volumeNumber));
+
+	const volumesBySeries = new Map<
+		string,
+		{ seriesId: string; seriesTitle: string; latestCoverId: string; missing: number[] }
+	>();
+	for (const v of volumes) {
+		const list = volumesBySeries.get(v.seriesId) ?? {
+			seriesId: v.seriesId,
+			seriesTitle: v.seriesTitle,
+			latestCoverId:
+				volumes
+					.filter((x) => x.seriesId === v.seriesId)
+					.sort((a, b) => b.volumeNumber - a.volumeNumber)
+					.find((x) => x.coverFileId !== null)?.coverFileId || '',
+			missing: []
+		};
+		if (!volumesBySeries.has(v.seriesId)) {
+			volumesBySeries.set(v.seriesId, list);
+		}
+		list.missing.push(v.volumeNumber);
+	}
+
+	const missingBySeries = volumesBySeries
+		.values()
+		.toArray()
+		.map((v) => {
+			return { ...v, missing: findMissingVolumeNumbers(v.missing) };
+		})
+		.filter((v) => v.missing.length !== 0);
+
+	return missingBySeries;
+});
