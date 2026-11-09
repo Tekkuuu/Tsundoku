@@ -1,6 +1,6 @@
-# Tsundoku — SvelteKit (adapter-node) production image
-# Build:  docker build -t tsundoku .
-# Run:    docker run -p 3000:3000 --env-file .env tsundoku
+# Omm — SvelteKit (adapter-node) production image
+# Build:  docker build -t omm .
+# Run:    docker run -p 3000:3000 --env-file .env omm
 # Compose: see README "Example minimal production compose.yaml for app + db".
 
 # ---------- base: Node + pnpm ----------
@@ -21,7 +21,7 @@ FROM base AS builder
 # modules, and src/lib/server/db/index.ts throws without DATABASE_URL.
 # `postgres()` is lazy (no connection during build), so a placeholder is fine.
 # Real values are supplied at runtime and are NOT baked into the image.
-ARG DATABASE_URL="postgres://tsundoku:tsundoku@localhost:5432/tsundoku"
+ARG DATABASE_URL="postgres://omm:omm@localhost:5432/omm"
 ARG BETTER_AUTH_SECRET="build-time-dummy-secret-override-at-runtime"
 ENV DATABASE_URL=$DATABASE_URL BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
 COPY --from=deps /app/node_modules ./node_modules

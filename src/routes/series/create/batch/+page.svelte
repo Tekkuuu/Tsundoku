@@ -16,9 +16,10 @@
 		title?: string;
 		author?: string;
 		status?: (typeof seriesValidation.seriesStatusEnum.options)[number];
+		genres?: string;
 	};
 
-	type SeriesField = 'title' | 'author' | 'status';
+	type SeriesField = 'title' | 'author' | 'status' | 'genres';
 
 	const statuses = seriesValidation.seriesStatusEnum.options;
 	const statusOptions = statuses.map((value) => ({ value, label: getSeriesStatusText(value) }));
@@ -28,7 +29,8 @@
 	const fieldLabels: Record<string, () => string> = {
 		title: m.series_batch_col_title,
 		author: m.series_batch_col_author,
-		status: m.series_batch_col_status
+		status: m.series_batch_col_status,
+		genres: m.form_series_cu_genres_label
 	};
 
 	const selection = createRowSelection();
@@ -55,7 +57,8 @@
 		return {
 			title: '',
 			author: '',
-			status: statuses[0]
+			status: statuses[0],
+			genres: ''
 		};
 	}
 
@@ -200,6 +203,17 @@
 									/>
 								</div>
 							</th>
+							<th class="w-56">
+								<div class="flex items-center justify-between gap-1">
+									<span>{m.form_series_cu_genres_label()}</span>
+									<BatchBulkMenu
+										label={m.form_series_cu_genres_label()}
+										kind="text"
+										{selectedCount}
+										onapply={(value, target) => applyValue('genres', value, target)}
+									/>
+								</div>
+							</th>
 							<th class="w-12">
 								<span class="sr-only">{m.series_batch_col_actions()}</span>
 							</th>
@@ -261,6 +275,14 @@
 												<option value={opt}>{getSeriesStatusText(opt)}</option>
 											{/each}
 										</select>
+									</td>
+
+									<td data-field="genres">
+										<input
+											class="table-input"
+											{...createSeriesBatch.fields.series[i].genres.as('text')}
+											placeholder="Action, Fantasy"
+										/>
 									</td>
 
 									<td>

@@ -59,7 +59,7 @@
 	--color-brand-contrast-dark: var(--color-primary-contrast-500);
 }
 
-[data-theme='tsundoku'] {
+[data-theme='omm'] {
 	--typo-heading--font-family: 'M PLUS 2', sans-serif;
 	--typo-base--font-family: 'M PLUS 2', sans-serif;
 	--typo-anchor--font-family: 'M PLUS 2', sans-serif;
@@ -155,10 +155,10 @@
 	--color-secondary-contrast-100: var(--color-secondary-contrast-dark);
 	--color-secondary-contrast-200: var(--color-secondary-contrast-dark);
 	--color-secondary-contrast-300: var(--color-secondary-contrast-dark);
-	--color-secondary-contrast-400: var(--color-secondary-contrast-light);
-	--color-secondary-contrast-500: var(--color-secondary-contrast-light);
-	--color-secondary-contrast-600: var(--color-secondary-contrast-light);
-	--color-secondary-contrast-700: var(--color-secondary-contrast-light);
+	--color-secondary-contrast-400: var(--color-secondary-contrast-dark);
+	--color-secondary-contrast-500: var(--color-secondary-contrast-dark);
+	--color-secondary-contrast-600: var(--color-secondary-contrast-dark);
+	--color-secondary-contrast-700: var(--color-secondary-contrast-dark);
 	--color-secondary-contrast-800: var(--color-secondary-contrast-light);
 	--color-secondary-contrast-900: var(--color-secondary-contrast-light);
 	--color-secondary-contrast-950: var(--color-secondary-contrast-light);

@@ -3,16 +3,25 @@
 	import Dialog from '#lib/components/ui/Dialog.svelte';
 	import { m } from '#lib/paraglide/messages.js';
 	import { getSeriesStatusText } from './series-labels';
+	import GenreTagInput from './GenreTagInput.svelte';
 	import { updateSeries } from '#lib/remote/series.remote.js';
-	import { type UpdateSeries } from '#lib/shared/validation/series.js';
+	import { type UpdateSeries, type SeriesGenre } from '#lib/shared/validation/series.js';
 	import { createEnhanceHandler } from '#lib/client/form-handlers.js';
 
 	type Props = {
 		series: UpdateSeries;
+		genres?: SeriesGenre[];
 		open?: boolean;
 	};
 
-	let { series, open = $bindable(false) }: Props = $props();
+	let { series, genres = [], open = $bindable(false) }: Props = $props();
+
+	let addedGenres = $state<SeriesGenre[]>([]);
+	let removedGenres = $state<string[]>([]);
+	let pendingGenres = $state(0);
+
+	const addGenresFieldName = updateSeries.fields.addGenres.as('checkbox', 'placeholder').name;
+	const removeGenresFieldName = updateSeries.fields.removeGenres.as('checkbox', 'placeholder').name;
 
 	const handleEnhance = createEnhanceHandler<UpdateSeries, void>({
 		success: m.dialog_series_edit_success(),
@@ -30,6 +39,8 @@
 			author: series.author ?? '',
 			status: series.status ?? seriesValidation.seriesStatusEnum.options[0]
 		});
+		addedGenres = [];
+		removedGenres = [];
 	});
 </script>
 
@@ -76,7 +87,32 @@
 				{/each}
 			</label>
 
-			<button type="submit" class="btn w-full preset-filled-primary-500">
+			<div>
+				<GenreTagInput
+					bind:genres={addedGenres}
+					bind:removed={removedGenres}
+					existing={genres}
+					bind:pending={pendingGenres}
+				/>
+				{#each addedGenres.filter((genre) => genre.id) as genre (genre.id)}
+					<input type="hidden" name={addGenresFieldName} value={genre.id} />
+				{/each}
+				{#each removedGenres as genreId (genreId)}
+					<input type="hidden" name={removeGenresFieldName} value={genreId} />
+				{/each}
+				{#each updateSeries.fields.addGenres.issues() ?? [] as issue (issue.message)}
+					<p class="text-sm text-error-500">{issue.message}</p>
+				{/each}
+				{#each updateSeries.fields.removeGenres.issues() ?? [] as issue (issue.message)}
+					<p class="text-sm text-error-500">{issue.message}</p>
+				{/each}
+			</div>
+
+			<button
+				type="submit"
+				class="btn w-full preset-filled-primary-500"
+				disabled={pendingGenres > 0}
+			>
 				{m.dialog_series_edit_submit()}
 			</button>
 		</form>

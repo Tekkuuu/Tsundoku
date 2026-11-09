@@ -64,6 +64,20 @@
       "when": 1793658049041,
       "tag": "0008_eager_umar",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794008812124,
+      "tag": "0009_fat_blackheart",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794083197749,
+      "tag": "0010_striped_swarm",
+      "breakpoints": true
     }
   ]
 }

@@ -1,16 +1,17 @@
+name: omm
 services:
   app:
-    image: ghcr.io/tekkuuu/tsundoku:latest
-    container_name: tsundoku
+    image: ghcr.io/tekkuuu/one-more-manga:latest
+    container_name: omm
     ports:
       - '3000:3000'
     environment:
-      ORIGIN: 'https://tsundoku.example.com'
-      DATABASE_URL: 'postgres://tsundoku:tsundoku@db:5432/tsundoku'
+      ORIGIN: 'https://omm.example.com'
+      DATABASE_URL: 'postgres://omm:omm@db:5432/omm'
       BETTER_AUTH_SECRET: '${BETTER_AUTH_SECRET}'
       MAX_USERS: '1'
       LOG_LEVEL: 'info'
-      # Self-hosted uploads (covers, receipts) live here.
+      # Uploads (covers, receipts).
       DATA_DIR: '/data'
     volumes:
       - appdata:/data
@@ -21,16 +22,16 @@ services:
 
   db:
     image: postgres:16
-    container_name: tsundoku-db
+    container_name: omm-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: tsundoku
-      POSTGRES_PASSWORD: tsundoku
-      POSTGRES_DB: tsundoku
+      POSTGRES_USER: omm
+      POSTGRES_PASSWORD: omm
+      POSTGRES_DB: omm
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U tsundoku -d tsundoku']
+      test: ['CMD-SHELL', 'pg_isready -U omm -d omm']
       interval: 10s
       timeout: 5s
       retries: 5

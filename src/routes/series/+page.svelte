@@ -11,12 +11,13 @@
 		ListPlus,
 		Pencil,
 		Plus,
+		Tags,
 		Trash2
 	} from '@lucide/svelte';
 	import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import { resolve } from '$app/paths';
 	import { m } from '#lib/paraglide/messages.js';
-	import type { DeleteSeries, UpdateSeries } from '#lib/shared/validation/series.js';
+	import type { DeleteSeries, UpdateSeries, SeriesGenre } from '#lib/shared/validation/series.js';
 	import ConfirmDialog from '#lib/components/ui/ConfirmDialog.svelte';
 	import BookCover from '#lib/components/book/BookCover.svelte';
 	import { coverSrc } from '#lib/shared/file-url.js';
@@ -27,6 +28,8 @@
 	import ViewModeToggle from '#lib/components/ui/ViewModeToggle.svelte';
 	import Pagination from '#lib/components/ui/Pagination.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 
 	type SeriesResult = Awaited<ReturnType<typeof getSeries>>;
 	type SeriesEntry = SeriesResult['seriesEntries'][number];
@@ -35,7 +38,7 @@
 
 	let searchQuery = $state('');
 	let appliedSearch = $state('');
-	let page = $state(1);
+	let viewPage = $state(1);
 	let perPage = $state(24);
 
 	$effect(() => {
@@ -44,7 +47,7 @@
 
 		const timeout = setTimeout(() => {
 			appliedSearch = nextSearch;
-			page = 1;
+			viewPage = 1;
 		}, 250);
 
 		return () => clearTimeout(timeout);
@@ -63,10 +66,10 @@
 	const totalPages = $derived(Math.max(1, Math.ceil(lastTotal / perPage)));
 
 	const pageQueries = $derived.by(() => {
-		const candidates = new SvelteSet([page]);
+		const candidates = new SvelteSet([viewPage]);
 
-		if (page > 1) candidates.add(page - 1);
-		if (page < totalPages) candidates.add(page + 1);
+		if (viewPage > 1) candidates.add(viewPage - 1);
+		if (viewPage < totalPages) candidates.add(viewPage + 1);
 
 		return [...candidates]
 			.sort((a, b) => a - b)
@@ -76,7 +79,8 @@
 			}));
 	});
 	const seriesQuery = $derived(
-		pageQueries.find((candidate) => candidate.page === page)?.query ?? createSeriesQuery(page)
+		pageQueries.find((candidate) => candidate.page === viewPage)?.query ??
+			createSeriesQuery(viewPage)
 	);
 	const seriesPage = $derived(seriesQuery.current);
 
@@ -105,13 +109,14 @@
 		if (!seriesPage) return;
 
 		const pageCount = Math.max(1, Math.ceil(seriesPage.total / perPage));
-		if (page > pageCount) page = pageCount;
+		if (viewPage > pageCount) viewPage = pageCount;
 	});
 
 	let editDialogOpen = $state(false);
 	let editableSeries: UpdateSeries = $state({
 		id: ''
 	});
+	let editableGenres = $state<SeriesGenre[]>([]);
 
 	let deleteDialogOpen = $state(false);
 	let deletableSeries: DeleteSeries = $state({
@@ -136,6 +141,7 @@
 			author: entry.author ?? undefined,
 			status: entry.status
 		};
+		editableGenres = entry.genres;
 		editDialogOpen = true;
 	}
 
@@ -153,13 +159,21 @@
 	snapshot({
 		capture: () => ({
 			searchQuery,
-			page,
+			page: viewPage,
 			perPage
 		}),
 		restore: (value) => {
 			searchQuery = value.searchQuery;
-			page = value.page;
+			viewPage = value.page;
 			perPage = value.perPage;
+		}
+	});
+
+	onMount(() => {
+		const urlParams = page.url.searchParams;
+
+		if (urlParams.get('genre') !== null) {
+			searchQuery = `genre:${urlParams.get('genre')}`;
 		}
 	});
 </script>
@@ -310,6 +324,14 @@
 			<ListPlus class="size-4" />
 			{m.series_addnewbatch()}
 		</a>
+		<a
+			href={resolve('series/genres')}
+			class="btn btn-icon shrink-0 preset-tonal"
+			aria-label={m.genre_admin_title()}
+			title={m.genre_admin_title()}
+		>
+			<Tags class="size-4" />
+		</a>
 		<div class="flex w-full gap-2 md:w-fit">
 			<div class="w-full md:max-w-sm">
 				<SearchHelpPopover
@@ -318,11 +340,12 @@
 					title={m.series_search_help_title()}
 					description={m.series_search_help_description()}
 					fieldsTitle={m.series_search_help_fields_title()}
-					fields={['title', 'author']}
+					fields={['title', 'author', 'genre']}
 					examplesTitle={m.series_search_help_examples_title()}
 					examples={[
 						'title:Berserk',
 						'author:"Kentarō Miura"',
+						'genre:Action',
 						'title:"Attack on Titan"',
 						'-author:Kentaro'
 					]}
@@ -362,11 +385,11 @@
 	{/if}
 
 	{#if total > 0 && !seriesQuery.error}
-		<Pagination bind:page count={total} bind:perPage />
+		<Pagination bind:page={viewPage} count={total} bind:perPage />
 	{/if}
 </main>
 
-<UpdateSeriesDialog bind:open={editDialogOpen} series={editableSeries} />
+<UpdateSeriesDialog bind:open={editDialogOpen} series={editableSeries} genres={editableGenres} />
 <ConfirmDialog
 	title={m.series_confirmdelete_title()}
 	confirmLabel={m.common_delete()}

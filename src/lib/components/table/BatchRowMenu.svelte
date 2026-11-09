@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
+	import { browser } from '$app/env';
 	import type { Snippet } from 'svelte';
 	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { toaster } from '#lib/client/toaster.js';
@@ -75,49 +76,51 @@
 
 <Menu positioning={{ placement: 'bottom-start' }} onSelect={handleSelect}>
 	<Menu.ContextTrigger element={tbody} oncontextmenu={capture} />
-	<Portal>
-		<Menu.Positioner>
-			<Menu.Content
-				class="z-50 space-y-1 card border border-surface-300-700 bg-surface-50-950 p-2 shadow-xl"
-			>
-				{#if activeCell}
-					<p class="p-2 text-xs font-semibold text-surface-500 uppercase">
-						{activeCell.field ? fieldLabels[activeCell.field]?.() : ''}
-						· {m.table_row_number({ row: activeCell.rowIndex + 1 })}
-					</p>
+	{#if browser}
+		<Portal>
+			<Menu.Positioner>
+				<Menu.Content
+					class="z-50 space-y-1 card border border-surface-300-700 bg-surface-50-950 p-2 shadow-xl"
+				>
+					{#if activeCell}
+						<p class="p-2 text-xs font-semibold text-surface-500 uppercase">
+							{activeCell.field ? fieldLabels[activeCell.field]?.() : ''}
+							· {m.table_row_number({ row: activeCell.rowIndex + 1 })}
+						</p>
 
-					{#if activeCell.field}
+						{#if activeCell.field}
+							<Menu.Item
+								value="copy"
+								class="flex w-full items-center gap-2 rounded-base p-2 text-left hover:preset-filled-primary-50-950"
+							>
+								<Menu.ItemText>{m.table_copy_value()}</Menu.ItemText>
+							</Menu.Item>
+							<Menu.Item
+								value="paste"
+								class="flex w-full items-center gap-2 rounded-base p-2 text-left hover:preset-filled-primary-50-950"
+							>
+								<Menu.ItemText>{m.table_paste_value()}</Menu.ItemText>
+							</Menu.Item>
+							<Menu.Separator class="border-surface-300-700" />
+						{/if}
+
 						<Menu.Item
-							value="copy"
+							value="insert"
 							class="flex w-full items-center gap-2 rounded-base p-2 text-left hover:preset-filled-primary-50-950"
 						>
-							<Menu.ItemText>{m.table_copy_value()}</Menu.ItemText>
+							<Menu.ItemText>{m.table_insert_below()}</Menu.ItemText>
 						</Menu.Item>
 						<Menu.Item
-							value="paste"
+							value="delete"
 							class="flex w-full items-center gap-2 rounded-base p-2 text-left hover:preset-filled-primary-50-950"
 						>
-							<Menu.ItemText>{m.table_paste_value()}</Menu.ItemText>
+							<Menu.ItemText>{m.table_delete_row()}</Menu.ItemText>
 						</Menu.Item>
-						<Menu.Separator class="border-surface-300-700" />
 					{/if}
-
-					<Menu.Item
-						value="insert"
-						class="flex w-full items-center gap-2 rounded-base p-2 text-left hover:preset-filled-primary-50-950"
-					>
-						<Menu.ItemText>{m.table_insert_below()}</Menu.ItemText>
-					</Menu.Item>
-					<Menu.Item
-						value="delete"
-						class="flex w-full items-center gap-2 rounded-base p-2 text-left hover:preset-filled-primary-50-950"
-					>
-						<Menu.ItemText>{m.table_delete_row()}</Menu.ItemText>
-					</Menu.Item>
-				{/if}
-			</Menu.Content>
-		</Menu.Positioner>
-	</Portal>
+				</Menu.Content>
+			</Menu.Positioner>
+		</Portal>
+	{/if}
 </Menu>
 
 {#snippet tbody(attrs: SvelteHTMLElements['button'])}

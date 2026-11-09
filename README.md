@@ -1,12 +1,28 @@
-# Tsundoku 📚
+# One More Manga
 
 A self-hosted personal manga tracker. Track your series, volumes, orders, reading progress, and spending.
 
-> _Tsundoku_ (積ん読) — the art of buying books and letting them pile up unread.
+> Omm... (read like _Umm_). The sound you make when you realize how much money you have drowned in manga.
+
+## Screenshots
+
+![Dashboard with reading progress, calendar and carousels](screenshots/Dashboard.png)
+
+<details>
+<summary>More screenshots (click to expand)</summary>
+
+|                                                                            |                                                                    |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| ![Series list](screenshots/SeriesList.png)                                 | ![Volume grid with per-volume covers](screenshots/VolumesGrid.png) |
+| ![Volume details](screenshots/VolumeDetails.png)                           | ![Orders list](screenshots/OrderList.png)                          |
+| ![Order details with totals and adjustments](screenshots/OrderDetails.png) | ![Finance statistics](screenshots/MoneyStats.png)                  |
+| ![Series statistics](screenshots/SeriesStats.png)                          |                                                                    |
+
+</details>
 
 ## Features
 
-### 📖 Series collection
+### Series collection
 
 - Create, edit, and delete series
 - Batch-add multiple series at once
@@ -14,7 +30,7 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - Fuzzy search with field filters, e.g. `title:naruto author:kishimoto -boruto`
 - Grid / list views
 
-### 📦 Volume tracking
+### Volume tracking
 
 - Per-volume shelf status: `Wishlist` / `Ordered` / `Owned`
 - Per-volume reading progress: `Not Read` / `Reading` / `Completed`
@@ -24,7 +40,7 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - Purchase info and purchase month
 - Grid / list views
 
-### 🧾 Orders
+### Orders
 
 - Orders with store name, order number, order date, currency, receipt and notes
 - Add volumes to orders and edit their prices
@@ -32,14 +48,14 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - Order adjustments: e.g. shipping, fees, discounts
 - Search and filter by `order/store/title/author/volume/paidPrice/originalPrice/date/note`, with numeric/date operators and exclusions
 
-### 💰 Finances & stats
+### Finances & stats
 
 - Total spend per currency: volumes cost, fees, discounts, amount saved and total paid
 - Monthly spending chart with averages and a month-by-month breakdown
 - Custom / this-year / all-time ranges
 - "Undated books" helper page lists volumes with no order and no purchase month
 
-### 🏠 Dashboard
+### Dashboard
 
 - KPI marquee: series, owned / read / ordered / wishlisted volumes and orders
 - Reading-progress overview
@@ -47,7 +63,7 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - `Currently Reading`, `Ordered`, and `To read` carousels with quick actions
 - Searchable unread backlog
 
-### 🔒 Auth & self-hosting friendly
+### Auth & self-hosting friendly
 
 - Email + password auth with usernames via [Better Auth](https://www.better-auth.com/)
 - `MAX_USERS` registration gate: `1` = single-user (default), `0` = closed registration, empty = unlimited
@@ -55,7 +71,7 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - English + Polish UI with in-app language switcher (Help in translating this app into other languages is welcomed and appreciated!)
 - Desktop and Mobile friendly layout
 
-### 🌎 Translations
+### Translations
 
 | Language | Translated by                          |
 | -------- | -------------------------------------- |
@@ -89,14 +105,14 @@ See `messages/en.json` for reference
 cp .env.example .env
 ```
 
-| Variable             | Required | Default                      | Description                                                                                   |
-| -------------------- | -------- | ---------------------------- | --------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`       | yes      | —                            | Postgres connection string, e.g. `postgres://tsundoku:tsundoku@localhost:5432/tsundoku`       |
-| `BETTER_AUTH_SECRET` | yes      | —                            | 32+ char secret for sessions. Generate with e.g. `openssl rand -base64 32`                    |
-| `ORIGIN`             | no       | `http://localhost:5173`      | Public base URL. Required in production for CSRF/cookies, e.g. `https://tsundoku.example.com` |
-| `MAX_USERS`          | no       | `1`                          | Registration cap. `1` = single-user, `0` = disabled, empty = unlimited                        |
-| `LOG_LEVEL`          | no       | `info`                       | Pino log level: `fatal, error, warn, info, debug, trace, silent`                              |
-| `DATA_DIR`           | no       | `./data` (`/data` in Docker) | Directory for self-hosted uploads (covers, receipts). Served only to their owner              |
+| Variable             | Required | Default                      | Description                                                                              |
+| -------------------- | -------- | ---------------------------- | ---------------------------------------------------------------------------------------- |
+| `DATABASE_URL`       | yes      | —                            | Postgres connection string, e.g. `postgres://omm:omm@localhost:5432/omm`                 |
+| `BETTER_AUTH_SECRET` | yes      | —                            | 32+ char secret for sessions. Generate with e.g. `openssl rand -base64 32`               |
+| `ORIGIN`             | no       | `http://localhost:5173`      | Public base URL. Required in production for CSRF/cookies, e.g. `https://omm.example.com` |
+| `MAX_USERS`          | no       | `1`                          | Registration cap. `1` = single-user, `0` = disabled, empty = unlimited                   |
+| `LOG_LEVEL`          | no       | `info`                       | Pino log level: `fatal, error, warn, info, debug, trace, silent`                         |
+| `DATA_DIR`           | no       | `./data` (`/data` in Docker) | Directory for self-hosted uploads (covers, receipts). Served only to their owner         |
 
 ### 1) Run from repo with docker
 
@@ -175,7 +191,7 @@ The dump is plain SQL with `--clean --if-exists`, so it restores over an existin
 
 ```sh
 # dockerized postgres (compose.yaml):
-docker compose exec -T db psql -U tsundoku -d tsundoku < backups/<file>.sql
+docker compose exec -T db psql -U omm -d omm < backups/<file>.sql
 
 # any other postgres:
 psql "$DATABASE_URL" -f backups/<file>.sql
@@ -185,7 +201,7 @@ tar -xzf backups/files-<timestamp>.tar.gz
 
 # dockerized app (compose.prod.yaml): the files live in the `appdata` volume —
 # back it up straight from the volume instead of ./data:
-docker run --rm -v tsundoku_appdata:/data -v "$PWD/backups:/backup" alpine \
+docker run --rm -v omm_appdata:/data -v "$PWD/backups:/backup" alpine \
   tar -czf /backup/files-<timestamp>.tar.gz -C /data .
 ```
 

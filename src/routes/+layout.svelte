@@ -86,7 +86,7 @@
 <AppBar class="hidden md:block">
 	<AppBar.Toolbar class="grid-cols-[auto_1fr_auto] gap-4 md:grid-cols-[1fr_auto_1fr]">
 		<AppBar.Lead>
-			<a href={resolve('/')} class="text-2xl font-black text-primary-950-50">Tsundoku</a>
+			<a href={resolve('/')} class="text-2xl font-black text-primary-950-50">One More Manga</a>
 		</AppBar.Lead>
 		<AppBar.Headline class="flex justify-center">
 			<nav class="flex items-center gap-1">

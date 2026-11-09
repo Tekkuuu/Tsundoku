@@ -1,0 +1,1 @@
+CREATE INDEX "genre_name_trgm_idx" ON "genre" USING gin ("name" gin_trgm_ops);

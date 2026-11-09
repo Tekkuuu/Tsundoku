@@ -12,7 +12,8 @@ import {
 	check,
 	pgEnum,
 	smallint,
-	date
+	date,
+	primaryKey
 } from 'drizzle-orm/pg-core';
 import { user } from './auth.schema';
 
@@ -62,6 +63,37 @@ export const series = pgTable(
 		),
 		index('series_title_trgm_idx').using('gin', sql`${table.title} gin_trgm_ops`),
 		index('series_author_trgm_idx').using('gin', sql`${table.author} gin_trgm_ops`)
+	]
+);
+
+export const genre = pgTable(
+	'genre',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		name: text('name').notNull()
+	},
+	(table) => [
+		uniqueIndex('unique_user_genre').on(table.userId, sql`lower(btrim(${table.name}))`),
+		index('genre_name_trgm_idx').using('gin', sql`${table.name} gin_trgm_ops`)
+	]
+);
+
+export const seriesGenre = pgTable(
+	'series_genre',
+	{
+		genreId: uuid('genre_id')
+			.notNull()
+			.references(() => genre.id, { onDelete: 'cascade' }),
+		seriesId: uuid('series_id')
+			.notNull()
+			.references(() => series.id, { onDelete: 'cascade' })
+	},
+	(table) => [
+		primaryKey({ columns: [table.seriesId, table.genreId] }),
+		index('seriesGenre_genreId_idx').on(table.genreId)
 	]
 );
 
@@ -198,7 +230,8 @@ export const orderAdjustment = pgTable(
 
 export const seriesRelations = relations(series, ({ one, many }) => ({
 	user: one(user, { fields: [series.userId], references: [user.id] }),
-	books: many(book)
+	books: many(book),
+	seriesGenre: many(seriesGenre)
 }));
 
 export const fileRelations = relations(file, ({ one }) => ({
@@ -234,6 +267,16 @@ export const orderItemRelations = relations(orderItem, ({ one }) => ({
 export const orderAdjustmentRelations = relations(orderAdjustment, ({ one }) => ({
 	user: one(user, { fields: [orderAdjustment.userId], references: [user.id] }),
 	order: one(order, { fields: [orderAdjustment.orderId], references: [order.id] })
+}));
+
+export const genreRelations = relations(genre, ({ one, many }) => ({
+	user: one(user, { fields: [genre.userId], references: [user.id] }),
+	seriesGenre: many(seriesGenre)
+}));
+
+export const seriesGenreRelations = relations(seriesGenre, ({ one }) => ({
+	series: one(series, { fields: [seriesGenre.seriesId], references: [series.id] }),
+	genre: one(genre, { fields: [seriesGenre.genreId], references: [genre.id] })
 }));
 
 export * from './auth.schema';

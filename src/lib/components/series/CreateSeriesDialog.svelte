@@ -4,8 +4,9 @@
 	import type { Snippet } from 'svelte';
 	import { m } from '#lib/paraglide/messages.js';
 	import { getSeriesStatusText } from './series-labels';
+	import GenreTagInput from './GenreTagInput.svelte';
 	import { createSeries } from '#lib/remote/series.remote.js';
-	import { type CreateSeries } from '#lib/shared/validation/series.js';
+	import { type CreateSeries, type SeriesGenre } from '#lib/shared/validation/series.js';
 	import { createEnhanceHandler } from '#lib/client/form-handlers.js';
 
 	type Props = {
@@ -16,12 +17,19 @@
 	let { children, triggerClass }: Props = $props();
 
 	let open = $state(false);
+	let selectedGenres = $state<SeriesGenre[]>([]);
+	let pendingGenres = $state(0);
+
+	$effect(() => {
+		if (!open && pendingGenres === 0) selectedGenres = [];
+	});
 
 	const handleEnhance = createEnhanceHandler<CreateSeries, void>({
 		success: m.dialog_series_add_success(),
 		invalidData: m.dialog_series_add_invalid_data(),
 		error: m.dialog_series_add_error(),
 		onSuccess: () => {
+			selectedGenres = [];
 			open = false;
 		}
 	});
@@ -72,7 +80,25 @@
 				{/each}
 			</label>
 
-			<button type="submit" class="btn w-full preset-filled-primary-500">
+			<div>
+				<GenreTagInput bind:genres={selectedGenres} bind:pending={pendingGenres} />
+				{#each selectedGenres.filter((genre) => genre.id) as genre (genre.id)}
+					<input
+						type="hidden"
+						name={createSeries.fields.genres.as('checkbox', 'placeholder').name}
+						value={genre.id}
+					/>
+				{/each}
+				{#each createSeries.fields.genres.issues() ?? [] as issue (issue.message)}
+					<p class="text-sm text-error-500">{issue.message}</p>
+				{/each}
+			</div>
+
+			<button
+				type="submit"
+				class="btn w-full preset-filled-primary-500"
+				disabled={pendingGenres > 0}
+			>
 				{m.dialog_series_add_submit()}
 			</button>
 		</form>

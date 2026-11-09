@@ -256,7 +256,7 @@ function requestOnce(
 			{
 				method: 'GET',
 				lookup: guardedLookup(allowPrivateIps),
-				headers: { 'user-agent': 'Tsundoku/1.0 (+self-hosted)', accept: '*/*' }
+				headers: { 'user-agent': 'Omm/1.0 (+self-hosted)', accept: '*/*' }
 			},
 			(res) => {
 				if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {

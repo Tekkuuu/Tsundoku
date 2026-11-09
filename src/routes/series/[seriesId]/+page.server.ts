@@ -1,6 +1,6 @@
 import { db } from '#lib/server/db/index.js';
-import { series, book, order, orderItem } from '#lib/server/db/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { series, book, genre, seriesGenre, order, orderItem } from '#lib/server/db/schema.js';
+import { asc, eq, and } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { logger } from '#lib/server/logger.js';
@@ -22,6 +22,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.select()
 		.from(book)
 		.where(and(eq(book.seriesId, params.seriesId), eq(book.userId, locals.user.id)));
+
+	const seriesGenres = await db
+		.select({ id: genre.id, name: genre.name })
+		.from(seriesGenre)
+		.innerJoin(genre, eq(seriesGenre.genreId, genre.id))
+		.where(and(eq(seriesGenre.seriesId, params.seriesId), eq(genre.userId, locals.user.id)))
+		.orderBy(asc(genre.name));
 
 	logger.debug(
 		{ userId: locals.user.id, seriesId: params.seriesId, bookCount: seriesBooks.length },
@@ -68,6 +75,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	return {
 		seriesInfo,
 		seriesBooks,
+		seriesGenres,
 		booksInOrders
 	};
 };
