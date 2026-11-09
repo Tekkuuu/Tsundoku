@@ -1,7 +1,7 @@
 name: omm
 services:
   app:
-    image: ghcr.io/tekkuuu/one-more-manga:latest
+    image: ghcr.io/tekkuuu/onemoremanga:latest
     container_name: omm
     ports:
       - '3000:3000'
