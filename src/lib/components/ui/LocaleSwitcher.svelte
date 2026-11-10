@@ -16,7 +16,7 @@
 	}
 </script>
 
-<div class="flex items-center gap-2" role="group" aria-label={m.settings_language()}>
+<div class="flex items-center gap-2" role="group" aria-label={m.preferences_language()}>
 	<Languages class="size-4 opacity-70" />
 	{#each locales as locale (locale)}
 		<button

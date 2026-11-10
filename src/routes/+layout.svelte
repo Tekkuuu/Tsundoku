@@ -9,6 +9,7 @@
 	import { goto, refreshAll } from '$app/navigation';
 	import {
 		BookOpen,
+		Brush,
 		ChevronDown,
 		CircleUser,
 		Ellipsis,
@@ -22,6 +23,7 @@
 	import { toaster } from '#lib/client/toaster.js';
 	import { m } from '#lib/paraglide/messages.js';
 	import type { LayoutProps } from './$types';
+	import { onMount } from 'svelte';
 
 	let { data, children }: LayoutProps = $props();
 
@@ -74,10 +76,28 @@
 	}
 
 	function handleAccountSelect(event: { value: string }) {
-		if (event.value === 'settings') goto(resolve('user/settings'));
-		else if (event.value === 'login') goto(resolve('login'));
-		else if (event.value === 'logout') handleLogout();
+		switch (event.value) {
+			case 'settings':
+				goto(resolve('user/settings'));
+				break;
+			case 'preferences':
+				goto(resolve('user/preferences'));
+				break;
+			case 'login':
+				goto(resolve('login'));
+				break;
+			case 'logout':
+				handleLogout();
+				break;
+		}
 	}
+
+	onMount(() => {
+		const m = JSON.parse(localStorage.getItem('mode') || 'system');
+		const t = JSON.parse(localStorage.getItem('theme') || 'omm');
+		document.documentElement.setAttribute('data-mode', m);
+		document.documentElement.setAttribute('data-theme', t);
+	});
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
@@ -128,11 +148,8 @@
 									{m.settings_title()}
 								</Menu.Item>
 
-								<Menu.Item
-									value="preferences"
-									disabled
-									class="btn w-full justify-start gap-2 opacity-50 data-disabled:pointer-events-none"
-								>
+								<Menu.Item value="preferences" class="btn w-full justify-start gap-2">
+									<Brush class="size-4" />
 									{m.nav_preferences()}
 								</Menu.Item>
 								<Menu.Separator class="my-1 h-px border-0 bg-surface-200-800" />
@@ -210,6 +227,7 @@
 							disabled
 							class="btn w-full justify-start gap-2 opacity-50 data-disabled:pointer-events-none"
 						>
+							<Brush class="size-4" />
 							{m.nav_preferences()}
 						</Menu.Item>
 						{#if data.user}

@@ -8,6 +8,8 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+@custom-variant dark (&:where([data-mode=dark], [data-mode=dark] *));
+
 [data-theme='cerberus'] {
 	--typo-heading--font-family: 'M PLUS 2', sans-serif;
 	--typo-base--font-family: 'M PLUS 2', sans-serif;
