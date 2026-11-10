@@ -6,7 +6,7 @@
 	import './layout.css';
 	import favicon from '#lib/assets/favicon.svg';
 	import { AppBar, Navigation, Toast, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
-	import { goto } from '$app/navigation';
+	import { goto, refreshAll } from '$app/navigation';
 	import {
 		BookOpen,
 		ChevronDown,
@@ -19,12 +19,11 @@
 		ChartPie
 	} from '@lucide/svelte';
 	import { authClient } from '#lib/client/auth.js';
-	import { refreshAll } from '$app/navigation';
 	import { toaster } from '#lib/client/toaster.js';
 	import { m } from '#lib/paraglide/messages.js';
+	import type { LayoutProps } from './$types';
 
-	let { children } = $props();
-	let session = authClient.useSession();
+	let { data, children }: LayoutProps = $props();
 
 	const navLinks = [
 		{ label: () => m.nav_series(), href: resolve('series') },
@@ -70,7 +69,8 @@
 
 	async function handleLogout() {
 		await authClient.signOut();
-		refreshAll();
+		await refreshAll();
+		await goto(resolve('login'));
 	}
 
 	function handleAccountSelect(event: { value: string }) {
@@ -101,7 +101,7 @@
 			</nav>
 		</AppBar.Headline>
 		<AppBar.Trail class="justify-end">
-			{#if $session.data}
+			{#if data.user}
 				<Menu onSelect={handleAccountSelect}>
 					<Menu.Trigger class="btn flex items-center gap-2 preset-tonal">
 						<CircleUser class="size-5" />
@@ -115,10 +115,10 @@
 							>
 								<div class="px-3 py-2">
 									<p class="truncate text-sm font-medium">
-										{$session.data.user.name ?? $session.data.user.email}
+										{data.user.name ?? data.user.email}
 									</p>
 									<p class="truncate text-xs opacity-70">
-										{$session.data.user.email}
+										{data.user.email}
 									</p>
 								</div>
 								<Menu.Separator class="my-1 h-px border-0 bg-surface-200-800" />
@@ -188,13 +188,13 @@
 					<Menu.Content
 						class="z-50 min-w-56 card border border-surface-200-800 bg-surface-50-950 p-2 shadow-xl"
 					>
-						{#if $session.data}
+						{#if data.user}
 							<div class="px-3 py-2">
 								<p class="truncate text-sm font-medium">
-									{$session.data.user.name ?? $session.data.user.email}
+									{data.user.name ?? data.user.email}
 								</p>
 								<p class="truncate text-xs opacity-70">
-									{$session.data.user.email}
+									{data.user.email}
 								</p>
 							</div>
 							<Menu.Separator class="my-1 h-px border-0 bg-surface-200-800" />
@@ -212,7 +212,7 @@
 						>
 							{m.nav_preferences()}
 						</Menu.Item>
-						{#if $session.data}
+						{#if data.user}
 							<Menu.Separator class="my-1 h-px border-0 bg-surface-200-800" />
 							<Menu.Item value="logout" class="btn w-full justify-start gap-2 text-error-600-400">
 								<LogOut class="size-4" />
