@@ -58,7 +58,11 @@
 
 	async function copy() {
 		if (!(await writeClipboard(value))) {
-			toaster.error({ title: m.toast_title_error(), description: m.table_clipboard_error() });
+			toaster.error({
+				title: m.toast_title_error(),
+				description: m.table_clipboard_error(),
+				closable: true
+			});
 		}
 	}
 
@@ -67,7 +71,11 @@
 		if (!cell?.field) return;
 		const text = await readClipboard();
 		if (text === null) {
-			toaster.error({ title: m.toast_title_error(), description: m.table_clipboard_error() });
+			toaster.error({
+				title: m.toast_title_error(),
+				description: m.table_clipboard_error(),
+				closable: true
+			});
 			return;
 		}
 		onpaste(cell, text.replace(/[\r\n]+/g, ' ').trim());

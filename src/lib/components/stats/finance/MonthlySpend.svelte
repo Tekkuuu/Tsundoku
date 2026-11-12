@@ -26,7 +26,8 @@
 			console.error('[stats] monthly finance statistics failed', value);
 			toaster.error({
 				title: m.stats_finance_error(),
-				description: value instanceof Error ? value.message : m.stats_finance_error()
+				description: value instanceof Error ? value.message : m.stats_finance_error(),
+				closable: true
 			});
 		});
 		return () => {

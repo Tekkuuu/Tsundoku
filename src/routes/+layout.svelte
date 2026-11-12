@@ -169,7 +169,7 @@
 </AppBar>
 
 <main class="mt-2 flex flex-col items-center px-2 pb-20 md:pb-0">
-	{@render children()}
+	{@render children?.()}
 </main>
 
 <!-- Mobile dock navigation -->
@@ -263,7 +263,9 @@
 				<Toast.Title>{toast.title}</Toast.Title>
 				<Toast.Description>{toast.description}</Toast.Description>
 			</Toast.Message>
-			<Toast.CloseTrigger />
+			{#if toast.closable}
+				<Toast.CloseTrigger />
+			{/if}
 		</Toast>
 	{/snippet}
 </Toast.Group>

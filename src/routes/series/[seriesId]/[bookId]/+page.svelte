@@ -114,7 +114,8 @@
 			console.error('[progress] error', err);
 			toaster.error({
 				title: m.toast_title_error(),
-				description: m.book_detail_error_progress()
+				description: m.book_detail_error_progress(),
+				closable: true
 			});
 		} finally {
 			// Drop the draft so the stored date (updated on success, unchanged on
@@ -137,7 +138,8 @@
 			input.value = previous;
 			toaster.error({
 				title: m.toast_title_error(),
-				description: m.book_detail_error_progress()
+				description: m.book_detail_error_progress(),
+				closable: true
 			});
 		}
 	}
