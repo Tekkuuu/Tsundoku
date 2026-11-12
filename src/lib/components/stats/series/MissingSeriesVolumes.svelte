@@ -89,7 +89,7 @@
 								: m.stats_missing_volume_range_aria({ from: group.from, to: group.to })}
 						>
 							<span aria-hidden="true">
-								{group.kind === 'single' ? group.value : `${group.from}–${group.to}`}
+								{group.kind === 'single' ? group.value : `${group.from}-${group.to}`}
 							</span>
 						</li>
 					{/each}

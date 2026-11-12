@@ -20,7 +20,11 @@ describe('findMissingVolumeNumbers', () => {
 		expect(findMissingVolumeNumbers([9, 1, 5, 5])).toEqual([2, 3, 4, 6, 7, 8]);
 	});
 
-	it('does not report gaps before the first volume', () => {
-		expect(findMissingVolumeNumbers([5, 7])).toEqual([6]);
+	it('reports gaps when 1st volume is not present yet', () => {
+		expect(findMissingVolumeNumbers([3])).toEqual([1, 2]);
+	});
+
+	it('reports gaps when 1st volume is not present yet and all other existing gaps', () => {
+		expect(findMissingVolumeNumbers([3, 5, 7, 10])).toEqual([1, 2, 4, 6, 8, 9]);
 	});
 });
