@@ -295,27 +295,10 @@
 		@apply bg-transparent;
 	}
 
-	.input {
-		/* Fix for M PLUS 2 tall font normal */
-		height: calc(var(--field-size) * 2 - 0.125rem);
+	.select {
+		/* HACK: Fixes selects being too short for M PLUS 2 font */
+		line-height: normal !important;
 	}
-}
-
-/*
- * Native date/time controls reserve 1.5em internally for their value. With the
- * fixed `.input` height above, the default vertical padding leaves too little
- * room, which pushes the value/icon down and clips them. Keep the same outer
- * height but give those controls the space they need.
- *
- * Kept outside `@layer components` so it wins over the `input` utility's
- * `padding-block` declaration.
- */
-.input[type='date'],
-.input[type='datetime-local'],
-.input[type='time'],
-.input[type='month'],
-.input[type='week'] {
-	padding-block: calc((var(--field-size) * 2 - 0.125rem - 1.5em) / 2);
 }
 
 /*
