@@ -27,7 +27,9 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - Create, edit, and delete series
 - Batch-add multiple series at once
 - Series status: `Ongoing` / `Completed` / `Hiatus` / `Cancelled`
-- Fuzzy search with field filters, e.g. `title:naruto author:kishimoto -boruto`
+- Genres with autocomplete when creating/editing; batch-add accepts comma-separated genres
+- Genre admin at `/series/genres`: rename, capitalize, or delete (deleting removes the genre from all series)
+- Fuzzy search with field filters, e.g. `title:naruto author:kishimoto -boruto`, plus `genre:` filter; genre chips link to a pre-filtered list
 - Grid / list views
 
 ### Volume tracking
@@ -50,6 +52,8 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 
 ### Finances & stats
 
+- Series stats tab: missing volumes and top/all genres with series counts
+- Missing volumes gap detection including leading gaps (e.g. owns 3, 5 → missing 1, 2, 4), with red warning on series page
 - Total spend per currency: volumes cost, fees, discounts, amount saved and total paid
 - Monthly spending chart with averages and a month-by-month breakdown
 - Custom / this-year / all-time ranges
@@ -69,6 +73,7 @@ A self-hosted personal manga tracker. Track your series, volumes, orders, readin
 - `MAX_USERS` registration gate: `1` = single-user (default), `0` = closed registration, empty = unlimited
 - Password resets done via console script (see below)
 - English + Polish UI with in-app language switcher (Help in translating this app into other languages is welcomed and appreciated!)
+- Theme preferences at `/user/preferences`: Dark / Light / System mode, `omm` / `cerberus` themes
 - Desktop and Mobile friendly layout
 
 ### Translations
