@@ -36,7 +36,7 @@
 </script>
 
 <article class="mx-auto flex h-full w-full min-w-48 gap-2 card preset-filled-surface-50-950 p-2">
-	<a {href} class="block">
+	<a {href} class="block aspect-2/3">
 		<BookCover
 			{src}
 			{alt}
