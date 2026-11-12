@@ -30,13 +30,15 @@ export function createEnhanceHandler<Input extends RemoteFormInput | void, Outpu
 				}
 				toaster.success({
 					title: m.toast_title_success(),
-					description: success
+					description: success,
+					closable: true
 				});
 				onSuccess?.();
 			} else {
 				toaster.error({
 					title: m.toast_title_invalid_data(),
-					description: invalidData ?? m.toast_description_invalid_data()
+					description: invalidData ?? m.toast_description_invalid_data(),
+					closable: true
 				});
 				onInvalidData?.();
 			}
@@ -44,7 +46,8 @@ export function createEnhanceHandler<Input extends RemoteFormInput | void, Outpu
 			console.error('[form] error', err);
 			toaster.error({
 				title: m.toast_title_error(),
-				description: error ?? m.toast_description_error()
+				description: error ?? m.toast_description_error(),
+				closable: true
 			});
 			onError?.();
 		}
@@ -73,13 +76,15 @@ export function createRemoteActionHandler(options: RemoteActionOptions): () => P
 			await onSuccess?.();
 			toaster.success({
 				title: m.toast_title_success(),
-				description: success
+				description: success,
+				closable: true
 			});
 		} catch (err) {
 			console.error('[remote] error', err);
 			toaster.error({
 				title: m.toast_title_error(),
-				description: error ?? m.toast_description_error()
+				description: error ?? m.toast_description_error(),
+				closable: true
 			});
 			await onError?.(err);
 		}

@@ -73,7 +73,8 @@
 			);
 			toaster.error({
 				title: m.toast_title_error(),
-				description: m.genre_create_error()
+				description: m.genre_create_error(),
+				closable: true
 			});
 		} finally {
 			pending--;

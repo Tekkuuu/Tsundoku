@@ -16,5 +16,5 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		throw redirect(302, '/');
 	}
 
-	return { user: locals.user ?? null };
+	return { user: locals.user || null };
 };

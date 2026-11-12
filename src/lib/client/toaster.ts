@@ -1,3 +1,3 @@
 import { createToaster } from '@skeletonlabs/skeleton-svelte';
 
-export const toaster = createToaster({ placement: 'top-end', removeDelay: 5000 });
+export const toaster = createToaster({ placement: 'top-end' });

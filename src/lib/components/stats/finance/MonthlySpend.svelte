@@ -26,7 +26,8 @@
 			console.error('[stats] monthly finance statistics failed', value);
 			toaster.error({
 				title: m.stats_finance_error(),
-				description: value instanceof Error ? value.message : m.stats_finance_error()
+				description: value instanceof Error ? value.message : m.stats_finance_error(),
+				closable: true
 			});
 		});
 		return () => {
@@ -158,7 +159,9 @@
 				<tr>
 					<td class="font-medium whitespace-nowrap">{bucket.monthLabel}</td>
 					<td class="text-right whitespace-nowrap">{formatter.format(bucket.bookCost)}</td>
-					<td class="text-right whitespace-nowrap">{formatter.format(bucket.fees)}</td>
+					<td class="text-right whitespace-nowrap text-error-600-400">
+						{formatter.format(bucket.fees)}
+					</td>
 					<td class="text-right whitespace-nowrap text-success-600-400">
 						{formatter.format(bucket.discounts)}
 					</td>
